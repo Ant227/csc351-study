@@ -551,11 +551,37 @@ async function submitQuiz() {
 }
 
 async function getFeedback(score, wrong) {
-  const feedback = score === 20
-    ? 'Perfect score! You\'ve mastered SQL Injection. Move on to the next lecture.'
-    : `Score: ${score}/20. Review the SQL Injection concepts you missed and try again.`;
+  const wrongText = wrong.length === 0 ? 'All correct!' :
+    wrong.map(w => `Q${w.num}: "${w.q}" — chose "${w.chose}" but correct is "${w.correct}"`).join('\n');
+  const prompt = `You are a CSC351 Application Security tutor at KMUTT helping a student review SQL Injection quiz results.
 
-  document.getElementById('feedback-area').innerHTML = `<div class="feedback-box">${feedback}</div>`;
+Score: ${score}/20
+Wrong answers:
+${wrongText}
+
+Give concise, exam-focused feedback. For each wrong answer start with "Q[number]:" and briefly explain why the correct answer is right and the chosen one is wrong. Then write a short "Review focus:" section naming the 2-3 specific topics to revisit. End with one short encouraging sentence. Plain text only, no markdown or bullet symbols.`;
+
+  try {
+    const res = await fetch('/api/feedback', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt: prompt
+      })
+    });
+    const data = await res.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    document.getElementById('feedback-area').innerHTML = `<div class="feedback-box">${data.feedback}</div>`;
+  } catch(e) {
+    console.error('Feedback error:', e);
+    const fallback = wrong.length === 0 ? 'Perfect score! Everything is solid — move on to the next lecture.' :
+      'Focus on: ' + [...new Set(wrong.map(w => w.q.split(' ').slice(0,5).join(' ') + '…'))].join('; ');
+    document.getElementById('feedback-area').innerHTML = `<div class="feedback-box">${fallback}</div>`;
+  }
 }
 
 function retry() {

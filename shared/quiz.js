@@ -194,13 +194,39 @@ class Quiz {
 
     if (!box) return;
 
-    if (loading) loading.style.display = 'none';
+    if (loading) loading.style.display = 'flex';
+    box.style.display = 'none';
 
-    const feedback = score === this.questions.length
-      ? 'Perfect score! You've mastered this topic. Move on to the next lecture.'
-      : `Score: ${score}/${this.questions.length}. Review the concepts you missed and try again.`;
+    const wrongText = wrong.length === 0
+      ? 'None — perfect score!'
+      : wrong.map(w => {
+          const letters = ['A', 'B', 'C', 'D'];
+          return `Q${w.qi + 1}: "${w.q.q}" — Selected: ${letters[w.selected]} (${w.q.opts[w.selected]}), Correct: ${letters[w.correct]} (${w.q.opts[w.correct]})`;
+        }).join('\n');
 
-    this._showFeedback(box, loading, feedback);
+    const prompt = this.feedbackPromptFn(score, wrongText);
+
+    fetch('/api/feedback', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+      }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        const text = data?.feedback ?? 'Unable to parse feedback response.';
+        this._showFeedback(box, loading, text);
+      })
+      .catch(error => {
+        console.error('Feedback error:', error);
+        this._showFeedback(box, loading, 'Unable to generate feedback. Please try again.');
+      });
   }
 
   _showFeedback(box, loading, text) {
