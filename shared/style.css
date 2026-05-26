@@ -61,31 +61,34 @@ a { color: inherit; }
   height: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  position: relative;
 }
 
 .nav-brand {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  color: var(--text-primary);
-  font-weight: 500;
   text-decoration: none;
+  font-family: 'DM Serif Display', serif;
+  font-weight: 800;
+  color: var(--accent);
+  font-size: 28px;
+  letter-spacing: -0.5px;
 }
 
 .nav-sep {
-  color: var(--text-tertiary);
-  font-weight: 400;
-  user-select: none;
+  display: none; /* no longer needed since it is just "Ant" logo */
 }
 
 .nav-topic {
-  color: var(--text-tertiary);
-  font-weight: 400;
+  display: none;
 }
 
 .nav-back {
+  margin-left: auto; /* push to the right */
   font-size: 14px;
   font-weight: 500;
   color: var(--accent);
