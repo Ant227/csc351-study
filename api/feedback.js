@@ -30,7 +30,7 @@ module.exports = async (req, res) => {
 
     const data = await response.json();
     if (!response.ok) {
-      return res.status(response.status).json({ error: 'API error', status: response.status });
+      return res.status(response.status).json({ error: 'API error', status: response.status, details: data });
     }
 
     const feedback = data.content[0].text;
