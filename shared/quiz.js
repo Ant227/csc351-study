@@ -225,7 +225,7 @@ class Quiz {
 
   /* ── Fetch AI feedback ──────────────────────────────── */
   fetchFeedback(score, wrong) {
-    const box     = document.getElementById('feedback-box');
+    const box     = document.getElementById('feedback-box') || document.getElementById('feedback-content');
     const loading = document.getElementById('feedback-loading');
 
     if (!box) return;
