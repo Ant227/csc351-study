@@ -336,5 +336,6 @@ function goToQuiz(quiz) {
     quizEl.classList.remove('hidden');
     void quizEl.offsetWidth;
     quizEl.classList.remove('fading');
+    window.scrollTo(0, 0);
   }, 200);
 }
