@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>window.ANTHROPIC_KEY = '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';</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SQL Injection — Lecture 12 · CSC351</title>
@@ -552,43 +551,11 @@ async function submitQuiz() {
 }
 
 async function getFeedback(score, wrong) {
-  const wrongText = wrong.length === 0 ? 'All correct!' :
-    wrong.map(w => `Q${w.num}: "${w.q}" — chose "${w.chose}" but correct is "${w.correct}"`).join('\n');
-  const prompt = `You are a CSC351 Application Security tutor at KMUTT helping a student review SQL Injection quiz results.
+  const feedback = score === 20
+    ? 'Perfect score! You\'ve mastered SQL Injection. Move on to the next lecture.'
+    : `Score: ${score}/20. Review the SQL Injection concepts you missed and try again.`;
 
-Score: ${score}/20
-Wrong answers:
-${wrongText}
-
-Give concise, exam-focused feedback. For each wrong answer start with "Q[number]:" and briefly explain why the correct answer is right and the chosen one is wrong. Then write a short "Review focus:" section naming the 2-3 specific topics to revisit. End with one short encouraging sentence. Plain text only, no markdown or bullet symbols.`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': window.ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const data = await res.json();
-    if (!res.ok || !data.content) {
-      throw new Error(data.error?.message || 'API error');
-    }
-    const text = data.content.map(b => b.text || '').join('');
-    document.getElementById('feedback-area').innerHTML = `<div class="feedback-box">${text}</div>`;
-  } catch(e) {
-    console.error('Feedback error:', e);
-    const fallback = wrong.length === 0 ? 'Perfect score! Everything is solid — move on to the next lecture.' :
-      'Focus on: ' + [...new Set(wrong.map(w => w.q.split(' ').slice(0,5).join(' ') + '…'))].join('; ');
-    document.getElementById('feedback-area').innerHTML = `<div class="feedback-box">${fallback}</div>`;
-  }
+  document.getElementById('feedback-area').innerHTML = `<div class="feedback-box">${feedback}</div>`;
 }
 
 function retry() {
