@@ -8,7 +8,9 @@
   <style>
     @media (min-width: 768px) {
       .topic-gallery-grid {
-        grid-template-columns: 1fr 1fr !important;
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 36px !important;
+        max-width: 1200px !important;
       }
     }
   </style>
@@ -34,7 +36,7 @@
 
   <!-- Hero / Header Section (Inspired by Mennour fine art gallery) -->
   <div style="text-align: center; margin-top: 60px; margin-bottom: 48px; border-bottom: 1px solid var(--border); padding-bottom: 32px;">
-    <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent);">LECTURE 14 & 15</span>
+    <span style="font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase;">LECTURE 14 & 15</span>
     <h1 style="font-family: 'DM Serif Display', serif; font-size: 38px; color: var(--text-primary); margin-top: 8px; margin-bottom: 12px; letter-spacing: -0.5px;">Shellshock Vulnerability</h1>
     <p style="font-size: 14px; color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6; padding: 0 16px;">
       Select a part below to begin. A combined 21-question practice quiz is available at the end of Part 2.
@@ -68,7 +70,7 @@
         <div style="font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">PART 2 · LECTURE 15</div>
         <h2 style="font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text-primary); font-weight: 700; margin-bottom: 8px;">Live Attack & Quiz</h2>
         <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; max-width: 440px; margin: 0 auto 16px;">
-          The CGI-to-Bash environment bridge, Curl payload headers injection, filesystem reads, interactive reverse shells, and the 21-question unified practice quiz.
+          The CGI-to-Bash environment bridge, Curl payload headers injection, filesystem reads, interactive reverse shells, and the 21-question practice quiz.
         </p>
         <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 2px;">
           <span class="score-badge" id="badge-shellshock" style="display:none; font-size: 10px; padding: 2px 6px; font-weight: 600; background: var(--accent-light); color: var(--accent); border-radius: var(--radius-sm); border: 1px solid var(--border); margin-right: 4px;"></span>
@@ -76,6 +78,21 @@
         </div>
       </div>
     </a>
+
+    <!-- Part 3 Column (Possible Exam Questions - Coming Soon) -->
+    <div style="display: flex; flex-direction: column; opacity: 0.75; cursor: not-allowed;">
+      <div style="border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: #000; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center;">
+        <img src="shared/images/exam_questions.png" alt="Exam Questions Illustration" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div style="text-align: center; margin-top: 20px;">
+        <div style="font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">PART 2 · EXAM PREP</div>
+        <h2 style="font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text-primary); font-weight: 700; margin-bottom: 8px;">Possible exam questions</h2>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; max-width: 440px; margin: 0 auto 16px;">
+          Curated selection of highly probable Block 3 exam scenarios, curl request payload tracing, and reverse shell analysis models.
+        </p>
+        <span style="font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; background: var(--accent-light); padding: 4px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);">Coming Soon</span>
+      </div>
+    </div>
 
   </div>
 
