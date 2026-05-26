@@ -578,9 +578,13 @@ Give concise, exam-focused feedback. For each wrong answer start with "Q[number]
       })
     });
     const data = await res.json();
+    if (!res.ok || !data.content) {
+      throw new Error(data.error?.message || 'API error');
+    }
     const text = data.content.map(b => b.text || '').join('');
     document.getElementById('feedback-area').innerHTML = `<div class="feedback-box">${text}</div>`;
   } catch(e) {
+    console.error('Feedback error:', e);
     const fallback = wrong.length === 0 ? 'Perfect score! Everything is solid — move on to the next lecture.' :
       'Focus on: ' + [...new Set(wrong.map(w => w.q.split(' ').slice(0,5).join(' ') + '…'))].join('; ');
     document.getElementById('feedback-area').innerHTML = `<div class="feedback-box">${fallback}</div>`;
