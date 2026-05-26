@@ -187,6 +187,23 @@
         </div>
       </div>
 
+      <!-- Section 9 — Quick Revision -->
+      <div class="section">
+        <span class="label label-concept">Quick Revision</span>
+        <h2 class="section-heading">Quick Revision</h2>
+        <ul class="revision-list">
+          <li><strong>Bash</strong> = Born Again Shell, the standard shell in Linux, sits between the user and the OS kernel</li>
+          <li><strong>Shell functions</strong> can be passed from parent process to child process via environment variables</li>
+          <li><strong>Shellshock</strong> = CVE-2014-6271, a bug in Bash that existed since 1989 and was discovered in 2014</li>
+          <li><strong>The bug is in parse_and_execute</strong> — when Bash converts an environment variable back into a function, it doesn't stop reading at the closing } and executes everything after it</li>
+          <li><strong>Proof of concept test:</strong> <code>env x='() { :; }; echo vulnerable' bash -c "echo test"</code> — outputs "vulnerable" if unpatched, just "test" if patched</li>
+          <li><strong>Remote exploitation</strong> requires two conditions: vulnerable unpatched Bash AND a CGI script on the web server</li>
+          <li><strong>The attack chain:</strong> attacker sends HTTP request → Apache creates CGI child process → Apache passes headers as environment variables → vulnerable Bash executes the payload hidden in the header</li>
+          <li><strong>curl flags:</strong> -A sets User-Agent, -e sets Referer, -H sets custom header — all become environment variables in the CGI child process</li>
+          <li><strong>Without CGI,</strong> no Bash child process is created from HTTP requests, so the attack has no path in</li>
+        </ul>
+      </div>
+
       <!-- Continue to Part 2 -->
       <div class="btn-ready-wrap">
         <a class="btn btn-primary btn-ready" href="shellshock-part2.html">Next: Continue to Part 2 →</a>
