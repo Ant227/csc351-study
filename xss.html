@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>window.ANTHROPIC_KEY = 'YOUR_API_KEY_HERE';</script>
+  <!-- Replace YOUR_API_KEY_HERE with your Anthropic API key -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XSS — CSC351</title>
+  <link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="index.html">
+        CSC351
+        <span class="nav-sep">/</span>
+        <span class="nav-topic">Cross-Site Scripting</span>
+      </a>
+      <a class="nav-back" href="index.html">← All topics</a>
+    </div>
+  </nav>
+
+  <!-- Mode indicator -->
+  <div class="mode-bar">
+    <div class="mode-bar-inner">
+      <span class="mode-step active" id="mode-1">Notes</span>
+      <span class="mode-chevron">›</span>
+      <span class="mode-step" id="mode-2">Quiz</span>
+      <span class="mode-chevron">›</span>
+      <span class="mode-step" id="mode-3">Results</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN: NOTES                                          -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="screen-notes" class="screen">
+    <div class="content">
+
+      <!-- Section 1 — The Problem That Started Everything -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">The Problem That Started Everything</h2>
+        <p class="body-text">Okay so imagine you're running a social network. Users can write bios, leave comments, post stuff. You store whatever they type in your database, then show it to other people.</p>
+        <p class="body-text"><strong>Simple enough, right?</strong></p>
+        <p class="body-text">Now imagine someone types this into their bio field: <code>&lt;script&gt;alert('hacked')&lt;/script&gt;</code></p>
+        <p class="body-text">You save it. Someone else visits their profile. Your server sends back the page. The browser reads it — and sees a <code>&lt;script&gt;</code> tag sitting right there in the HTML.</p>
+        <p class="body-text">The browser has no idea that's evil. It came from your server. So it runs it.</p>
+        <p class="body-text"><strong>That's the whole problem.</strong> Your website accidentally became the delivery truck for someone else's code.</p>
+      </div>
+
+      <!-- Section 2 — Why Does the Browser Trust It? -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">Why Does the Browser Trust It?</h2>
+        <p class="body-text">Think about a letter with a forged return address.</p>
+        <p class="body-text">If you get a letter that looks like it's from your bank, you open it without checking twice. The browser does the same thing. It doesn't care who wrote the code — it only checks where it came from.</p>
+        <p class="body-text">If the code arrives from example.com, the browser treats it as example.com's code. Full stop.</p>
+        <p class="body-text">So when an attacker gets their JavaScript into your page, the browser gives it the exact same trust it gives your own scripts. <strong>That's the core mechanic. That's why XSS is powerful.</strong></p>
+      </div>
+
+      <!-- Section 3 — Reflected XSS -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">Type 1 — Reflected XSS</h2>
+        <p class="body-text">Here's the story.</p>
+        <p class="body-text">You visit <code>example.com/search?q=shoes</code>. The page shows: "You searched for: shoes."</p>
+        <p class="body-text">Now notice what's happening — whatever you put in that URL, the server <strong>reflects it back onto the page.</strong> That's called reflective behavior.</p>
+        <p class="body-text">An attacker realizes: what if I put JavaScript there instead of "shoes"?</p>
+        <p class="body-text">They craft a URL like <code>example.com/search?q=&lt;script&gt;stealCookies()&lt;/script&gt;</code> and they trick the victim into clicking it. Maybe they hide it inside a QR code, a phishing email, a disguised link.</p>
+        <p class="body-text">The victim clicks. The browser sends the request. The server reflects the script back in the HTML. The browser runs it.</p>
+        <p class="body-text"><strong>The attack happens once, in real time.</strong> It's not saved anywhere. That's why it's called reflected — it bounces off the server back to the victim.</p>
+      </div>
+
+      <!-- Section 4 — Stored XSS -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">Type 2 — Stored (Persistent) XSS</h2>
+        <p class="body-text">Same idea. But this time, the attacker puts JavaScript into a field that gets saved to the database. A profile bio. A comment. A support ticket.</p>
+        <p class="body-text">Now the malicious code just sits there, patient.</p>
+        <p class="body-text"><strong>Every single user who loads that page later gets the script delivered by your server automatically.</strong> No crafted URL. No trick click needed. Just visiting the page is enough to get hit.</p>
+        <p class="body-text">Ajan used Facebook profiles as the example. You write JavaScript into your profile, other people visit your profile, they get attacked. Your profile page becomes a channel from the attacker to every victim.</p>
+        <div class="callout callout-red">
+          <strong>This is why stored XSS is considered more dangerous — it scales.</strong> One payload, unlimited victims. Alice and Bob textbook: it's "an attack the user is unable to protect themselves against." Because it comes from a domain they already trust.
+        </div>
+      </div>
+
+      <!-- Section 5 — What Can XSS Actually Do? -->
+      <div class="section">
+        <span class="label label-concept">Impact</span>
+        <h2 class="section-heading">What Can XSS Actually Do?</h2>
+        <p class="body-text"><strong>Three things, and all three make sense once you remember that JavaScript inside a browser has power over everything on that page.</strong></p>
+        <div class="capability-grid">
+          <div class="capability-card">
+            <div class="capability-tag">01 — Deface</div>
+            <div class="capability-title">Web defacing</div>
+            <div class="capability-text">JavaScript can reach into the page's DOM and change any text, any image, any element. It can make a legitimate bank site show fake balances, fake buttons, anything.</div>
+          </div>
+          <div class="capability-card">
+            <div class="capability-tag">02 — Forge</div>
+            <div class="capability-title">Spoofing requests</div>
+            <div class="capability-text">JavaScript can fire off HTTP requests using <code>fetch()</code> or <code>XMLHttpRequest</code>. The injected code can send requests to the server pretending to be the user — same as how web apps normally work, just weaponized.</div>
+          </div>
+          <div class="capability-card">
+            <div class="capability-tag">03 — Steal</div>
+            <div class="capability-title">Stealing information</div>
+            <div class="capability-text">JavaScript can read session cookies (if they're not protected), read any personal data displayed on the page, and even read things stored locally in the browser. The attacker receives all of this on their own server.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 6 — The Three Defenses -->
+      <div class="section">
+        <span class="label label-defense">Defenses</span>
+        <h2 class="section-heading">The Three Defenses</h2>
+        <p class="body-text">Think of three checkpoints in an assembly line.</p>
+        <div class="defense-steps">
+          <div class="defense-step">
+            <span class="defense-step-badge">Layer 1</span>
+            <div>
+              <div class="defense-step-title">Input Validation (before saving)</div>
+              <div class="defense-step-text">When the user submits data, check it before you store it. If a name field contains <code>&lt;script&gt;</code>, reject it. <strong>Don't let evil through the front door.</strong></div>
+            </div>
+          </div>
+          <div class="defense-step">
+            <span class="defense-step-badge">Layer 2</span>
+            <div>
+              <div class="defense-step-title">Output Encoding (before displaying)</div>
+              <div class="defense-step-text">When you pull data out of the database and put it on screen, convert dangerous characters into harmless text first. <code>&lt;script&gt;</code> becomes <code>&amp;lt;script&amp;gt;</code>. The browser renders it as visible text, not runnable code. It's ugly. <strong>It's also harmless.</strong></div>
+            </div>
+          </div>
+          <div class="defense-step">
+            <span class="defense-step-badge">Layer 3</span>
+            <div>
+              <div class="defense-step-title">CSP Header (last line of defense)</div>
+              <div class="defense-step-text">Content Security Policy is an HTTP response header that tells the browser: "Only run scripts from these approved sources. Block everything else." <strong>Even if someone bypasses the first two checkpoints, CSP can stop the injected script from running.</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="callout callout-green">
+          Alice and Bob textbook calls applying all three a "defense in depth" strategy. Ajan mentioned all three in class. <strong>Know all three.</strong>
+        </div>
+        <div class="callout callout-amber" style="margin-top:16px;">
+          ⚠ Exam trap: Output encoding must be applied when displaying data, not when storing. Storing encoded data is a mistake because you lose the original data.
+        </div>
+      </div>
+
+      <!-- Section 7 — The Biggest Trap — XSS vs CSRF -->
+      <div class="section">
+        <span class="label label-warn">⚠ High-Stakes Distinction</span>
+        <h2 class="section-heading">The Biggest Trap — XSS vs CSRF</h2>
+        <p class="body-text">Ajan called this out directly in the Block 2 exam review. Students lost points for mixing these up. <strong>Don't be that person.</strong></p>
+        <div class="compare-grid">
+          <div class="compare-card compare-card-red">
+            <div class="compare-label">XSS</div>
+            <div class="compare-headline">Attacker gets their own code to run in the victim's browser</div>
+            <div class="compare-rule"></div>
+            <ul class="compare-facts">
+              <li><span class="compare-dot"></span><span>The weapon is the attacker's JavaScript</span></li>
+              <li><span class="compare-dot"></span><span>Attacker's script executes on the trusted page</span></li>
+              <li><span class="compare-dot"></span><span>Can actively read and steal cookies, DOM data, tokens</span></li>
+              <li><span class="compare-dot"></span><span>The attacker's code crosses through the target site</span></li>
+            </ul>
+          </div>
+          <div class="compare-card compare-card-blue">
+            <div class="compare-label">CSRF</div>
+            <div class="compare-headline">Attacker tricks the victim's browser into sending a legitimate request</div>
+            <div class="compare-rule"></div>
+            <ul class="compare-facts">
+              <li><span class="compare-dot"></span><span>The weapon is the victim's own session cookie</span></li>
+              <li><span class="compare-dot"></span><span>No attacker code runs in the browser at all</span></li>
+              <li><span class="compare-dot"></span><span>Uses cookies without ever reading them</span></li>
+              <li><span class="compare-dot"></span><span>The request crosses from one site to another</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout callout-amber">
+          <strong>Ajan deducts 2 points for describing cookie theft in a CSRF answer, or describing forged requests in an XSS answer.</strong> Know which is which.
+        </div>
+      </div>
+
+      <!-- Section 8 — Exam / Scenario Tips -->
+      <div class="section">
+        <span class="label label-warn">Exam Tips</span>
+        <h2 class="section-heading">Exam / Scenario Tips</h2>
+        <p class="body-text"><strong>Ajan loves giving you a scenario where a website shows user-submitted content and asking you to trace the exact attack path.</strong></p>
+        <p class="body-text"><strong>The trap is usually in the type.</strong> If he says "a user updates their profile bio and other users are affected," that's <strong>stored XSS</strong> — don't say reflected. If he says "a search bar echoes your input back," that's <strong>reflected XSS</strong> — don't say stored.</p>
+        <p class="body-text"><strong>The other trap is the countermeasure question.</strong> If he asks where to apply output encoding, the answer is: <strong>at the point where data is displayed on the page</strong> — not when it's stored. Storing encoded data is a mistake because you lose the original data.</p>
+        <p class="body-text"><strong>And if he asks why XSS is different from all other injection attacks</strong> — the answer is: <strong>XSS executes on the client side (browser), every other injection executes on the server side.</strong> That distinction earns marks.</p>
+      </div>
+
+      <!-- Section 9 — Quick Revision -->
+      <div class="section">
+        <span class="label label-concept">Quick Revision</span>
+        <h2 class="section-heading">Quick Revision</h2>
+        <ul class="revision-list">
+          <li><strong>XSS happens because</strong> the browser trusts all code that comes from a domain, regardless of who actually wrote it</li>
+          <li><strong>Reflected XSS:</strong> payload travels in the URL, server echoes it back, not stored, victim must be tricked into clicking the crafted link</li>
+          <li><strong>Stored XSS:</strong> payload saved to database, delivered to every user who loads the page, no click required from victims</li>
+          <li><strong>Three damages:</strong> web defacing (DOM manipulation), spoofing requests (JS can send HTTP), stealing info (cookies, page data, local storage)</li>
+          <li><strong>Three defenses in order:</strong> input validation before saving → output encoding before displaying → CSP header as last resort</li>
+          <li><strong>XSS ≠ CSRF:</strong> XSS runs attacker's code in the browser, CSRF uses the victim's own session to send a forged request — mixing these up is a confirmed deduction</li>
+        </ul>
+      </div>
+
+      <!-- Ready button -->
+      <div class="btn-ready-wrap">
+        <button class="btn btn-primary btn-ready" onclick="goToQuiz(window._quiz)">Ready to test yourself →</button>
+      </div>
+
+    </div>
+  </div><!-- /screen-notes -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN: QUIZ                                           -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="screen-quiz" class="screen hidden fading">
+
+    <!-- Quiz topbar -->
+    <div class="quiz-topbar">
+      <span class="quiz-topbar-left" id="quiz-progress-text">0 / 20 answered</span>
+      <div class="quiz-topbar-center">
+        <div class="quiz-progress-track">
+          <div class="quiz-progress-fill" id="quiz-progress-fill"></div>
+        </div>
+      </div>
+      <div class="quiz-topbar-right">
+        <button class="btn btn-primary" id="quiz-submit-btn" style="padding:7px 16px;font-size:13px;" disabled>Submit answers</button>
+      </div>
+    </div>
+
+    <!-- Questions -->
+    <div class="quiz-content">
+      <div id="quiz-container"></div>
+    </div>
+
+  </div><!-- /screen-quiz -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN: RESULTS                                        -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="screen-results" class="screen hidden fading">
+    <div class="results-content">
+
+      <!-- Score -->
+      <div class="score-display">
+        <div>
+          <span class="score-big" id="score-number">0</span><span class="score-denom">/20</span>
+        </div>
+        <div class="score-pct" id="score-pct">0%</div>
+        <div class="score-grade" id="score-grade"></div>
+      </div>
+
+      <!-- AI Feedback -->
+      <span class="label label-concept" style="display:block;margin-bottom:12px;">AI Feedback</span>
+      <div id="feedback-loading" class="feedback-loading" style="display:none;">
+        <div class="spinner"></div>
+        <span>Analyzing your answers…</span>
+      </div>
+      <div id="feedback-box" class="feedback-box" style="display:none;"></div>
+
+      <!-- Actions -->
+      <div class="results-actions">
+        <button class="btn btn-secondary" onclick="window._quiz.retry()">↺ Retry quiz</button>
+        <button class="btn btn-secondary" onclick="window._quiz.reset()">← Back to notes</button>
+      </div>
+
+    </div>
+  </div><!-- /screen-results -->
+
+  <script src="shared/quiz.js"></script>
+  <script>
+    const questions = [
+      {
+        q: "A website stores user comments and displays them to other visitors without sanitization. Which attack does this enable?",
+        code: null,
+        opts: ["SQL Injection", "Cross-Site Request Forgery", "Cross-Site Scripting", "Buffer Overflow"],
+        answer: 2,
+        source: "Sanfoundry — Database / Application Security MCQs"
+      },
+      {
+        q: "Where does malicious code execute when a successful XSS attack occurs?",
+        code: null,
+        opts: ["On the database server", "On the web application server", "On the client side, inside the victim's browser", "On the attacker's machine"],
+        answer: 2,
+        source: "Alice and Bob Learn Application Security, Ch. 4"
+      },
+      {
+        q: "How does stored XSS differ from reflected XSS?",
+        code: null,
+        opts: ["Reflected XSS is persistent; stored XSS is non-persistent", "Stored XSS is persistent; reflected XSS is non-persistent", "Both are non-persistent", "There is no meaningful difference"],
+        answer: 1,
+        source: "examradar.com — XSS and Data Store Attacks MCQs"
+      },
+      {
+        q: "In a reflected XSS attack, where is the injected script found?",
+        code: null,
+        opts: ["In a server-side database", "In the HTTP response sent from the server to the victim", "In a client-side cookie", "In the browser cache"],
+        answer: 1,
+        source: "examradar.com — XSS and Data Store Attacks MCQs"
+      },
+      {
+        q: "In a DOM-based XSS attack, where does the malicious script execute?",
+        code: null,
+        opts: ["Server-side only", "Client-side, within the browser's DOM", "In the database", "Both server-side and client-side equally"],
+        answer: 1,
+        source: "examradar.com — XSS and Data Store Attacks MCQs"
+      },
+      {
+        q: "Which operation most commonly introduces Reflected XSS?",
+        code: null,
+        opts: ["A user visiting the homepage", "A user clicking a same-site hyperlink", "A site producing an error message that echoes the user's raw input without encoding", "A user logging out"],
+        answer: 2,
+        source: "proprofs.com — Web Application Security Quiz, OWASP Top Ten"
+      },
+      {
+        q: "How does the HttpOnly cookie flag mitigate XSS?",
+        code: null,
+        opts: ["It encrypts the cookie data", "It allows scripts to safely access the cookie", "It prevents JavaScript from reading the cookie via document.cookie", "It blocks cross-origin requests"],
+        answer: 2,
+        source: "examradar.com — XSS and Data Store Attacks MCQs"
+      },
+      {
+        q: "How does Content Security Policy mitigate XSS?",
+        code: null,
+        opts: ["By encrypting data in transit", "By preventing inline script execution and controlling which sources the browser may load scripts from", "By rate-limiting server responses", "By strengthening user authentication"],
+        answer: 1,
+        source: "examradar.com — XSS and Data Store Attacks MCQs"
+      },
+      {
+        q: "XSS stands for:",
+        code: null,
+        opts: ["Extreme Secure Scripting", "Cross Site Security", "X Site Scripting", "Cross Site Scripting"],
+        answer: 3,
+        source: "Sanfoundry — Cyber Attacks Types MCQs"
+      },
+      {
+        q: "What makes it possible for injected attacker code to run with full trust in the victim's browser?",
+        code: null,
+        opts: ["The database stores only plain text", "The browser trusts all scripts that arrive from the hosting domain regardless of who wrote them", "The server executes the script before sending the HTML page", "The attacker has compromised the site's DNS"],
+        answer: 1,
+        source: "Sanfoundry — Cyber Attacks Types MCQs"
+      },
+      {
+        q: "The primary purpose of output encoding before rendering user data is:",
+        code: null,
+        opts: ["To compress data for faster rendering", "To render injected script as harmless visible text rather than executable code", "To encrypt data so users cannot read it", "To convert data into binary for storage"],
+        answer: 1,
+        source: "Alice and Bob Learn Application Security, Ch. 4"
+      },
+      {
+        q: "Applying input validation, output encoding, AND CSP together as XSS defenses demonstrates which principle?",
+        code: null,
+        opts: ["Least Privilege", "Assume Breach", "Defense in Depth", "Attack Surface Reduction"],
+        answer: 2,
+        source: "Alice and Bob Learn Application Security, Ch. 4"
+      },
+      {
+        q: "Which statement best describes Same-Origin Policy in the context of XSS?",
+        code: null,
+        opts: ["Any script can freely access any resource on the web", "Scripts from one origin cannot read responses from a different origin", "Scripts execute without restrictions inside the browser sandbox", "It enables cross-origin resource sharing without limits"],
+        answer: 1,
+        source: "examradar.com — XSS and Data Store Attacks MCQs"
+      },
+      {
+        q: "What is the primary risk of DOM-based XSS compared to other types?",
+        code: null,
+        opts: ["It causes server overload", "It requires database access to execute", "It executes entirely client-side and never touches the server, making it invisible to server-side scanners", "It only affects older browsers"],
+        answer: 2,
+        source: "examradar.com — XSS and Data Store Attacks MCQs"
+      },
+      {
+        q: "An attacker stores a malicious script in a forum post. Every user who views the post has the script run silently in their browser. Which attack is this?",
+        code: null,
+        opts: ["SQL Injection", "CSRF", "Reflected XSS", "Stored XSS"],
+        answer: 3,
+        source: "OWASP Foundation — Cross-Site Scripting"
+      },
+      {
+        q: "Which statement correctly distinguishes XSS from CSRF?",
+        code: null,
+        opts: ["XSS uses the application's own functionality; CSRF injects attacker code", "XSS runs attacker code in the victim's browser; CSRF tricks the victim's browser into sending a forged request using their own session", "XSS and CSRF are the same attack with different names", "CSRF injects JavaScript; XSS forges HTTP requests"],
+        answer: 1,
+        source: "Alice and Bob Learn Application Security, Ch. 5"
+      },
+      {
+        q: "Stored XSS is considered more dangerous than reflected XSS because:",
+        code: null,
+        opts: ["The payload is harder to write", "It requires admin privileges on the victim's account", "One stored payload attacks every user who loads the infected page with no further effort from the attacker", "It bypasses HTTPS entirely"],
+        answer: 2,
+        source: "Web Application Security — Andrew Hoffman, Ch. 10"
+      },
+      {
+        q: "According to the Alice and Bob textbook, stored XSS is rated what severity level?",
+        code: null,
+        opts: ["Low risk — blocked by firewalls", "Medium risk — requires user interaction", "Critical risk — an attack the user is unable to protect themselves against", "Informational — no real-world impact"],
+        answer: 2,
+        source: "Alice and Bob Learn Application Security, Ch. 1"
+      },
+      {
+        q: "What does this payload demonstrate if the site renders it unencoded?",
+        code: "<script>alert(document.cookie)<\/script>",
+        opts: ["It is valid SQL targeting the database", "It is an XSS payload — if reflected or stored without output encoding, the browser executes it and the script accesses the page's cookies", "It is a CSRF payload that forges a cross-site request", "It is harmless — browsers always strip script tags from user input"],
+        answer: 1,
+        source: "OWASP XSS Prevention Cheat Sheet"
+      },
+      {
+        q: "Why does XSS bypass Same-Origin Policy rather than being blocked by it?",
+        code: null,
+        opts: ["XSS uses a special header to disable SOP", "SOP is only enforced on HTTPS connections", "XSS injects code directly into the trusted origin's own page — as far as the browser is concerned the code IS from that origin, so SOP never fires", "SOP only applies to images, not scripts"],
+        answer: 2,
+        source: "Alice and Bob + PortSwigger Web Security Academy"
+      }
+    ];
+
+    const xssFeedbackPrompt = (score, wrongText) =>
+      `You are a CSC351 Application Security tutor at KMUTT. A student just completed an XSS practice quiz before their Block 3 exam.\n\nScore: ${score}/20\nWrong answers:\n${wrongText}\n\nWrite concise exam-focused feedback in plain text only. For each wrong answer write Q[number]: then one sentence explaining why the correct answer is right and why their choice was wrong. Then write "Review focus:" naming 2-3 specific XSS concepts to revisit. End with one short encouraging sentence. No markdown, no bullet symbols, no headers.`;
+
+    const quiz = new Quiz('quiz-container', questions, 'score_xss', xssFeedbackPrompt);
+    window._quiz = quiz;
+    quiz.build();
+  </script>
+
+</body>
+</html>

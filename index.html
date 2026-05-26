@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSC351 — Block 3 Exam Prep</title>
+  <link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="index.html">CSC351</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero">
+    <span class="hero-eyebrow">KMUTT · SIT · CSC351</span>
+    <h1 class="hero-title">Block 3 Exam Prep</h1>
+    <p class="hero-sub">5 topics · 100 questions · AI-powered feedback</p>
+  </div>
+
+  <!-- Topic grid -->
+  <div class="topic-grid">
+
+    <!-- 1. XSS -->
+    <div class="topic-card" id="card-xss">
+      <div class="topic-card-body">
+        <div class="topic-card-title">XSS — Cross-Site Scripting</div>
+        <div class="topic-card-desc">How attackers inject malicious scripts into trusted pages and why the browser runs them.</div>
+        <div class="topic-card-footer">
+          <span class="score-badge" id="badge-xss" style="display:none"></span>
+          <a class="topic-card-link" href="xss.html">Study →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Clickjacking -->
+    <div class="topic-card" id="card-clickjacking">
+      <div class="topic-card-body">
+        <div class="topic-card-title">Clickjacking</div>
+        <div class="topic-card-desc">Invisible iframes, stolen clicks, and three generations of defense.</div>
+        <div class="topic-card-footer">
+          <span class="score-badge" id="badge-clickjacking" style="display:none"></span>
+          <a class="topic-card-link" href="clickjacking.html">Study →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. SQL Injection -->
+    <div class="topic-card topic-card-disabled">
+      <div class="topic-card-body">
+        <div class="topic-card-title">SQL Injection</div>
+        <div class="topic-card-desc">Tautology attacks, string concatenation bugs, and why parameterized queries are the only real fix.</div>
+        <div class="topic-card-footer">
+          <span class="coming-soon-badge">Coming soon</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Shellshock -->
+    <div class="topic-card topic-card-disabled">
+      <div class="topic-card-body">
+        <div class="topic-card-title">Shellshock</div>
+        <div class="topic-card-desc">A 25-year-old Bash bug, the CGI bridge, and how one curl command owns a server.</div>
+        <div class="topic-card-footer">
+          <span class="coming-soon-badge">Coming soon</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    (function () {
+      var topics = ['xss', 'clickjacking'];
+      topics.forEach(function(topic) {
+        var score = localStorage.getItem('score_' + topic);
+        if (score !== null) {
+          var badge = document.getElementById('badge-' + topic);
+          if (badge) {
+            var pct   = Math.round((parseInt(score, 10) / 20) * 100);
+            badge.textContent = pct + '%';
+            badge.style.display = 'inline-block';
+          }
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>

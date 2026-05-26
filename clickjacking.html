@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>window.ANTHROPIC_KEY = 'YOUR_API_KEY_HERE';</script>
+  <!-- Replace YOUR_API_KEY_HERE with your Anthropic API key -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clickjacking — CSC351</title>
+  <link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="index.html">
+        CSC351
+        <span class="nav-sep">/</span>
+        <span class="nav-topic">Clickjacking</span>
+      </a>
+      <a class="nav-back" href="index.html">← All topics</a>
+    </div>
+  </nav>
+
+  <!-- Mode indicator -->
+  <div class="mode-bar">
+    <div class="mode-bar-inner">
+      <span class="mode-step active" id="mode-1">Notes</span>
+      <span class="mode-chevron">›</span>
+      <span class="mode-step" id="mode-2">Quiz</span>
+      <span class="mode-chevron">›</span>
+      <span class="mode-step" id="mode-3">Results</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN: NOTES                                          -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="screen-notes" class="screen">
+    <div class="content">
+
+      <!-- Section 1 — Close Your Eyes for a Second -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">Close Your Eyes for a Second</h2>
+        <p class="body-text">Okay don't actually close them, you need to read this.</p>
+        <p class="body-text">But imagine you're sitting at your computer, bored, and a webpage pops up.</p>
+        <p class="body-text">It says: <strong>"CONGRATULATIONS! You are our 1,000,000th visitor! Click the button below to claim your free AirPods!"</strong></p>
+        <p class="body-text">There's a big shiny button in the middle of the screen.</p>
+        <p class="body-text">You think — okay, probably fake, but why not, let me just click it.</p>
+        <p class="body-text">You click.</p>
+        <p class="body-text">Nothing happens. No AirPods. Weird.</p>
+        <p class="body-text">But then, three days later, you get an email from your bank.</p>
+        <p class="body-text"><strong>"You have successfully transferred $5,000 to an unknown account."</strong></p>
+        <p class="body-text">You never went to your bank's website. You never authorized a transfer. You were just trying to win fake AirPods.</p>
+        <p class="body-text"><strong>What just happened?</strong></p>
+      </div>
+
+      <!-- Section 2 — Here's What Actually Happened -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">Here's What Actually Happened</h2>
+        <p class="body-text">That "claim your prize" webpage had two layers.</p>
+        <p class="body-text"><strong>The layer you could see</strong> — the congratulations message and the fake button.</p>
+        <p class="body-text"><strong>And a layer you could not see</strong> — completely invisible, sitting right on top of that fake button. An invisible copy of your bank's "Confirm Transfer" button, positioned pixel-perfectly underneath your mouse.</p>
+        <p class="body-text">When you clicked what you thought was the prize button, you actually clicked the invisible bank button underneath.</p>
+        <p class="body-text">Your browser didn't know anything was wrong. You clicked something. The thing at that location received the click. Done.</p>
+        <p class="body-text"><strong>That's Clickjacking.</strong></p>
+        <p class="body-text">You weren't hacked. Your computer wasn't infected. The attacker just put an invisible thing exactly where they knew you'd click.</p>
+      </div>
+
+      <!-- Section 3 — The Thing That Makes This Possible — iframes -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">The Thing That Makes This Possible — iframes</h2>
+        <p class="body-text">In HTML, there's something called an <code>iframe</code>. Think of it like a picture frame you hang on a wall — except instead of a painting inside it, there's a live, fully working other website playing inside it.</p>
+        <p class="body-text">You've seen this before without realizing it. When you watch a YouTube video that's embedded inside a news article — that little video player isn't part of the news site. It's a YouTube page, loaded inside a rectangular frame on the news page.</p>
+        <p class="body-text">That rectangle is an <code>iframe</code>.</p>
+        <p class="body-text"><strong>Now here's the key detail that makes clickjacking possible.</strong></p>
+        <p class="body-text">You can have two iframes stacked on top of each other.</p>
+        <p class="body-text">And you can make the top one completely invisible.</p>
+      </div>
+
+      <!-- Section 4 — The Invisible Glass Layer -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">The Invisible Glass Layer</h2>
+        <p class="body-text">Imagine a fish tank.</p>
+        <p class="body-text">Inside the fish tank there's a real fish swimming around. That's your bank's website — the bottom iframe. Fully real, fully functional.</p>
+        <p class="body-text">Now imagine someone places a pane of perfectly clear glass directly on top of the fish tank's opening. You can still see the fish. You can't see the glass. But if you try to reach in to touch the fish, your hand hits the glass first.</p>
+        <p class="body-text">That invisible glass is the attacker's top iframe.</p>
+        <p class="body-text">In CSS, the attacker sets <code>opacity: 0</code> on the top iframe. Zero opacity means completely transparent — your eyes go right through it. But your click lands on it first.</p>
+        <p class="body-text">The browser doesn't care what you can see. It cares what's on top. <strong>And the top layer always — always — receives the click.</strong></p>
+        <div class="callout callout-red">
+          <strong>Ajan said this in the lecture and it's the single most important thing about clickjacking:</strong> The top layer is always clickable.
+        </div>
+      </div>
+
+      <!-- Section 5 — How the Attacker Aims the Invisible Layer -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">How the Attacker Aims the Invisible Layer</h2>
+        <p class="body-text">Okay so now the attacker has two iframes. One visible real page, one invisible trap page.</p>
+        <p class="body-text">But they need to position the invisible one exactly right — so your click lands on the button they want you to press.</p>
+        <p class="body-text">Web pages use a coordinate system. Think of it like a map of the page.</p>
+        <p class="body-text"><strong>The very top-left corner of any webpage is position zero, zero.</strong> That's the starting point.</p>
+        <p class="body-text"><code>top</code> means how many pixels down from that corner.</p>
+        <p class="body-text"><code>left</code> means how many pixels to the right.</p>
+        <p class="body-text">So if a button on your bank's page sits at "top 400 pixels, left 200 pixels" — the attacker adjusts their invisible iframe until it lines up at exactly that same spot.</p>
+        <p class="body-text">They basically slide the invisible glass pane around until the invisible "confirm transfer" button sits right on top of the shiny fake "claim prize" button below.</p>
+        <p class="body-text">Then they test it. Click it themselves a few times. Adjust by a few pixels. Test again. Until it's perfect.</p>
+      </div>
+
+      <!-- Section 6 — The Stacking Problem — Who Gets to Be on Top? -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">The Stacking Problem — Who Gets to Be on Top?</h2>
+        <p class="body-text">When two iframes overlap, the browser needs to decide which one is actually on top.</p>
+        <p class="body-text">There are two ways this is controlled.</p>
+        <p class="body-text"><strong>Way 1 — z-index.</strong> This is a CSS number that represents depth. Think of it like the floors of a building. If iframe A is on floor 1 and iframe B is on floor 10, iframe B is higher up and covers iframe A. The attacker gives their invisible iframe a higher z-index than the real page underneath.</p>
+        <p class="body-text"><strong>Way 2 — Declaration order.</strong> If nobody sets a z-index at all, the browser falls back to a simple rule. Whichever iframe is written last in the HTML code sits on top. It's like stacking sheets of paper — the last one you put down is on top of the pile.</p>
+        <p class="body-text">The attacker uses one of these to guarantee their invisible iframe is always the one that catches the click.</p>
+      </div>
+
+      <!-- Section 7 — What Can an Attacker Actually Make You Do? -->
+      <div class="section">
+        <span class="label label-concept">Impact</span>
+        <h2 class="section-heading">What Can an Attacker Actually Make You Do?</h2>
+        <p class="body-text">Once you understand the trick — invisible layer on top, real button underneath — you can imagine all the damage.</p>
+        <div class="capability-grid">
+          <div class="capability-card">
+            <div class="capability-tag">01 — Social</div>
+            <div class="capability-title">Likejacking</div>
+            <div class="capability-text">You think you're clicking a game button. The invisible layer is a Facebook "Like" button for a hate group. You just publicly liked something you'd never support.</div>
+          </div>
+          <div class="capability-card">
+            <div class="capability-tag">02 — Credential</div>
+            <div class="capability-title">Fake login</div>
+            <div class="capability-text">The attacker builds a page that looks exactly like your university's login page. You type your username and password into the invisible real login form underneath.</div>
+          </div>
+          <div class="capability-card">
+            <div class="capability-tag">03 — Sequential</div>
+            <div class="capability-title">Sequence attack</div>
+            <div class="capability-text">The attacker maps out multiple buttons and makes you click in exactly that sequence. By the end of the game, you've completed an entire transaction you never intended.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 8 — The Defenses — Three Generations -->
+      <div class="section">
+        <span class="label label-defense">Defenses</span>
+        <h2 class="section-heading">The Defenses — Three Generations</h2>
+        <p class="body-text">People tried to stop clickjacking in three different ways over the years.</p>
+        <div class="defense-steps">
+          <div class="defense-step">
+            <span class="defense-step-badge">Gen 1</span>
+            <div>
+              <div class="defense-step-title">Frame Buster Script (Dead)</div>
+              <div class="defense-step-text">Developers put a JavaScript snippet on their page that detected if it was trapped inside a foreign iframe, then broke out. <strong>Completely defeated:</strong> Attackers use the <code>sandbox</code> attribute on iframes, which disables JavaScript inside the iframe. The frame buster script never even starts.</div>
+            </div>
+          </div>
+          <div class="defense-step">
+            <span class="defense-step-badge">Gen 2</span>
+            <div>
+              <div class="defense-step-title">X-Frame-Options (Deprecated)</div>
+              <div class="defense-step-text">An HTTP response header. <code>X-Frame-Options: DENY</code> means nobody can embed this page in an iframe. <code>SAMEORIGIN</code> means only the same domain can. <strong>Status:</strong> The Alice and Bob textbook explicitly warns it is deprecated. CSP is the modern replacement. Still works on old browsers but not for new builds.</div>
+            </div>
+          </div>
+          <div class="defense-step">
+            <span class="defense-step-badge">Gen 3</span>
+            <div>
+              <div class="defense-step-title">CSP frame-ancestors (Current Standard)</div>
+              <div class="defense-step-text">A directive inside the Content-Security-Policy header. <code>frame-ancestors 'none'</code> = nobody can embed this page. <code>frame-ancestors 'self'</code> = only this domain can. <strong>This is the answer Ajan wants.</strong> Set at the web server level so it applies to every page automatically.</div>
+            </div>
+          </div>
+        </div>
+        <div class="callout callout-green">
+          <strong>The smart implementation:</strong> Set CSP frame-ancestors on the web server config so it automatically applies to every single page. Not page by page, which would be a maintenance nightmare.
+        </div>
+      </div>
+
+      <!-- Section 9 — SOP Lives Inside iframes Too -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">SOP Lives Inside iframes Too</h2>
+        <p class="body-text">Ajan ran a live experiment in the SEED lab to show one more thing.</p>
+        <p class="body-text"><strong>Even inside iframes, the Same-Origin Policy is still active.</strong></p>
+        <p class="body-text">If your page tries to reach into a child iframe from a different domain and read its content — SOP blocks you. Access denied.</p>
+        <p class="body-text">But if your page and the child iframe are both from the same domain — you can read each other's content freely.</p>
+        <p class="body-text"><strong>This is why clickjacking attackers don't bother trying to read what's on the victim's page.</strong> SOP would block them. Instead they just position their invisible layer and let your click do all the work. They don't need to read the page — they just need to intercept the action.</p>
+      </div>
+
+      <!-- Section 10 — Exam / Scenario Tips -->
+      <div class="section">
+        <span class="label label-warn">Exam Tips</span>
+        <h2 class="section-heading">Exam / Scenario Tips</h2>
+        <p class="body-text"><strong>Ajan will describe a scenario</strong> — probably a website where a user gets tricked into performing an unintended action — and ask you to explain why the attack works and how to prevent it.</p>
+        <p class="body-text"><strong>The biggest trap is saying the attacker "hacked" the browser.</strong> They didn't touch the browser. They used a completely legitimate HTML feature — overlapping iframes — and the browser behaved exactly as designed.</p>
+        <p class="body-text"><strong>The second trap is naming X-Frame-Options as the defense.</strong> You'd get partial marks. <strong>Full marks require naming CSP frame-ancestors as the current standard,</strong> noting X-Frame-Options is deprecated and only kept for old browser compatibility, and explaining that frame buster scripts are completely dead because the sandbox attribute kills JavaScript inside iframes.</p>
+      </div>
+
+      <!-- Section 11 — Quick Revision -->
+      <div class="section">
+        <span class="label label-concept">Quick Revision</span>
+        <h2 class="section-heading">Quick Revision</h2>
+        <ul class="revision-list">
+          <li><strong>Clickjacking</strong> = two overlapping iframes. Bottom one is real and visible. Top one is invisible (opacity 0) and sits over a specific button on the bottom page. Your click lands on the invisible top layer.</li>
+          <li><strong>The browser always delivers clicks to the topmost layer</strong> — this is the core mechanic the entire attack depends on</li>
+          <li><strong>Stacking order</strong> is controlled by z-index (higher number = on top) or declaration order in HTML (last written = on top)</li>
+          <li><strong>Three attack types Ajan taught:</strong> likejacking (fake social media clicks), fake login (credential capture), sequence of clicks (trigger a multi-step action)</li>
+          <li><strong>Defense Generation 1 — Frame buster JavaScript:</strong> completely dead. Sandbox attribute on iframes disables the script.</li>
+          <li><strong>Defense Generation 2 — X-Frame-Options (DENY / SAMEORIGIN):</strong> deprecated. Still works on old browsers. Not for new builds.</li>
+          <li><strong>Defense Generation 3 — CSP frame-ancestors:</strong> the current correct answer. Set at the web server level so all pages are protected automatically.</li>
+          <li><strong>SOP applies inside iframes too</strong> — cross-origin iframes cannot read each other's DOM content</li>
+        </ul>
+      </div>
+
+      <!-- Ready button -->
+      <div class="btn-ready-wrap">
+        <button class="btn btn-primary btn-ready" onclick="goToQuiz(window._quiz)">Ready to test yourself →</button>
+      </div>
+
+    </div>
+  </div><!-- /screen-notes -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN: QUIZ                                           -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="screen-quiz" class="screen hidden fading">
+
+    <!-- Quiz topbar -->
+    <div class="quiz-topbar">
+      <span class="quiz-topbar-left" id="quiz-progress-text">0 / 20 answered</span>
+      <div class="quiz-topbar-center">
+        <div class="quiz-progress-track">
+          <div class="quiz-progress-fill" id="quiz-progress-fill"></div>
+        </div>
+      </div>
+      <div class="quiz-topbar-right">
+        <button class="btn btn-primary" id="quiz-submit-btn" style="padding:7px 16px;font-size:13px;" disabled>Submit answers</button>
+      </div>
+    </div>
+
+    <!-- Questions -->
+    <div class="quiz-content">
+      <div id="quiz-container"></div>
+    </div>
+
+  </div><!-- /screen-quiz -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN: RESULTS                                        -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="screen-results" class="screen hidden fading">
+    <div class="results-content">
+
+      <!-- Score -->
+      <div class="score-display">
+        <div>
+          <span class="score-big" id="score-number">0</span><span class="score-denom">/20</span>
+        </div>
+        <div class="score-pct" id="score-pct">0%</div>
+        <div class="score-grade" id="score-grade"></div>
+      </div>
+
+      <!-- AI Feedback -->
+      <span class="label label-concept" style="display:block;margin-bottom:12px;">AI Feedback</span>
+      <div id="feedback-loading" class="feedback-loading" style="display:none;">
+        <div class="spinner"></div>
+        <span>Analyzing your answers…</span>
+      </div>
+      <div id="feedback-box" class="feedback-box" style="display:none;"></div>
+
+      <!-- Actions -->
+      <div class="results-actions">
+        <button class="btn btn-secondary" onclick="window._quiz.retry()">↺ Retry quiz</button>
+        <button class="btn btn-secondary" onclick="window._quiz.reset()">← Back to notes</button>
+      </div>
+
+    </div>
+  </div><!-- /screen-results -->
+
+  <script src="shared/quiz.js"></script>
+  <script>
+    const questions = [
+      {
+        q: "What is Clickjacking?",
+        code: null,
+        opts: ["An attack where the attacker injects malicious code into a webpage's database", "An interface-based attack where a user is tricked into clicking on hidden content by clicking on something visible in a decoy website", "An attack where the attacker intercepts HTTP requests between the browser and server", "An attack where the attacker steals session cookies via JavaScript"],
+        answer: 1,
+        source: "PortSwigger Web Security Academy — Clickjacking"
+      },
+      {
+        q: "How does a basic Clickjacking attack differ from a CSRF attack?",
+        code: null,
+        opts: ["Clickjacking requires the user to be logged in; CSRF does not", "Clickjacking requires the user to perform an action like a button click; CSRF forges an entire request without the user's input", "Clickjacking steals cookies directly; CSRF uses JavaScript injection", "There is no meaningful difference between the two attacks"],
+        answer: 1,
+        source: "PortSwigger Web Security Academy — Clickjacking"
+      },
+      {
+        q: "In a Clickjacking attack, what is the purpose of setting the top iframe's opacity to 0 or close to 0?",
+        code: null,
+        opts: ["To prevent the browser from loading the iframe content", "To make the malicious iframe invisible to the user while keeping it fully functional and clickable", "To bypass Content Security Policy headers", "To prevent the iframe from sending cookies"],
+        answer: 1,
+        source: "PortSwigger Web Security Academy — Constructing a Clickjacking Attack"
+      },
+      {
+        q: "What CSS property controls the stacking order of overlapping elements in a Clickjacking attack?",
+        code: null,
+        opts: ["position", "display", "z-index", "overflow"],
+        answer: 2,
+        source: "PortSwigger Web Security Academy — Constructing a Clickjacking Attack"
+      },
+      {
+        q: "What is a frame buster script and why is it no longer considered a reliable defense against Clickjacking?",
+        code: null,
+        opts: ["A server-side script that blocks iframes; unreliable because servers can be bypassed with proxies", "A client-side JavaScript check that detects if a page is inside a foreign iframe; defeated by the HTML5 sandbox attribute which disables JavaScript inside the iframe", "A browser extension that blocks all iframes; unreliable because not all users install it", "A CSS rule that hides iframe content; defeated by attackers using high z-index values"],
+        answer: 1,
+        source: "PortSwigger Web Security Academy — Frame Busting Scripts"
+      },
+      {
+        q: "An attacker sets the following on their iframe: sandbox='allow-forms'. What does this achieve in a Clickjacking attack?",
+        code: null,
+        opts: ["It allows the attacker to read the victim's cookies from the sandboxed page", "It lets the victim's browser load the target page while disabling JavaScript inside it, neutralizing any frame buster script", "It enables the attacker's page to send cross-origin Ajax requests", "It prevents the CSP frame-ancestors directive from being enforced"],
+        answer: 1,
+        source: "PortSwigger Web Security Academy — Frame Busting Scripts"
+      },
+      {
+        q: "What does the X-Frame-Options: DENY header instruct the browser to do?",
+        code: null,
+        opts: ["Only allow pages from the same domain to embed this page in an iframe", "Allow any trusted domain to embed this page", "Prevent the page from being displayed in any frame, regardless of origin", "Encrypt the iframe content before rendering"],
+        answer: 2,
+        source: "MDN Web Docs — X-Frame-Options & Alice and Bob Learn Application Security"
+      },
+      {
+        q: "What does X-Frame-Options: SAMEORIGIN allow?",
+        code: null,
+        opts: ["Any website in the world can embed this page in an iframe", "Only pages from the same domain as this page can embed it in an iframe", "Only pages with a valid CSRF token can embed this page", "The page cannot be embedded anywhere — same as DENY"],
+        answer: 1,
+        source: "MDN Web Docs — X-Frame-Options & Alice and Bob Learn Application Security"
+      },
+      {
+        q: "According to the Alice and Bob textbook, what is the current status of the X-Frame-Options header?",
+        code: null,
+        opts: ["It is the current recommended standard and fully replaces CSP", "It is deprecated — CSP with the frame-ancestors directive is used in its place for modern browsers", "It was never officially supported and should not be used", "It is only supported by Firefox and not by Chrome or Safari"],
+        answer: 1,
+        source: "Alice and Bob Learn Application Security — Security Headers"
+      },
+      {
+        q: "Which Content Security Policy directive is the recommended modern replacement for X-Frame-Options?",
+        code: null,
+        opts: ["script-src", "default-src", "frame-ancestors", "connect-src"],
+        answer: 2,
+        source: "PortSwigger Web Security Academy — CSP & OWASP Clickjacking Defense Cheat Sheet"
+      },
+      {
+        q: "What does Content-Security-Policy: frame-ancestors 'none' do?",
+        code: null,
+        opts: ["Allows any origin to embed this page in an iframe", "Allows only the same origin to embed this page", "Prevents any origin from embedding this page in a frame or iframe", "Disables all JavaScript on the page"],
+        answer: 2,
+        source: "PortSwigger Web Security Academy — Preventing Clickjacking"
+      },
+      {
+        q: "What does Content-Security-Policy: frame-ancestors 'self' do?",
+        code: null,
+        opts: ["Blocks all framing including from the same domain", "Allows any domain to embed this page", "Allows only pages from the same origin to embed this page in a frame", "Allows only authenticated users to load the page in an iframe"],
+        answer: 2,
+        source: "PortSwigger Web Security Academy — Preventing Clickjacking"
+      },
+      {
+        q: "What makes Clickjacking a particularly effective attack from the user's perspective?",
+        code: null,
+        opts: ["It exploits browser bugs that users cannot patch", "The user cannot detect it — they believe they are clicking on something legitimate while the invisible layer intercepts their click", "It requires the user to have JavaScript disabled in their browser", "It only works on mobile devices where the screen is small"],
+        answer: 1,
+        source: "Alice and Bob Learn Application Security — Security Headers (Clickjacking)"
+      },
+      {
+        q: "What is Likejacking?",
+        code: null,
+        opts: ["An attack that steals the user's like history from social media databases", "A Clickjacking variant that tricks users into clicking social media Like or Share buttons they never intended to click", "An attack that forges Like requests using CSRF techniques", "A phishing attack disguised as a social media notification"],
+        answer: 1,
+        source: "Alice and Bob Learn Application Security & Ajan's Lecture 13 transcript"
+      },
+      {
+        q: "Why does the Same-Origin Policy NOT protect against Clickjacking, even though it protects against many other cross-site attacks?",
+        code: null,
+        opts: ["Because Clickjacking bypasses SOP by using DNS spoofing", "Because Clickjacking does not try to read cross-origin content — it just intercepts a click. SOP only restricts reading responses, not the act of embedding or clicking", "Because browsers disable SOP when iframes are involved", "Because SOP only applies to cookies, not to page rendering"],
+        answer: 1,
+        source: "PortSwigger Web Security Academy — Clickjacking & Ajan's Lecture 13 transcript"
+      },
+      {
+        q: "Why does a CSRF token NOT prevent a Clickjacking attack?",
+        code: null,
+        opts: ["Because CSRF tokens expire too quickly to be useful", "Because the Clickjacking attack occurs within an established legitimate session on the real website — the CSRF token is present and valid in all requests", "Because attackers can steal CSRF tokens using XSS before the Clickjacking attack", "Because CSRF tokens are only checked on POST requests, not GET requests"],
+        answer: 1,
+        source: "PortSwigger Web Security Academy — Clickjacking"
+      },
+      {
+        q: "What is multistep Clickjacking and why does it require more precision from the attacker?",
+        code: null,
+        opts: ["An attack targeting multiple users simultaneously using botnet infrastructure", "An attack that tricks the user into performing a sequence of clicks, each one firing a different button on the target site — requiring precise positioning for every step", "An attack that combines Clickjacking with SQL Injection to extract database content", "An attack where the attacker manually clicks the button on behalf of the victim after stealing their session"],
+        answer: 1,
+        source: "PortSwigger Web Security Academy — Multistep Clickjacking"
+      },
+      {
+        q: "If both X-Frame-Options and the CSP frame-ancestors directive are set on the same page and they conflict, which one does the browser prioritize?",
+        code: null,
+        opts: ["X-Frame-Options always takes priority as the older standard", "The browser ignores both headers if they conflict", "The frame-ancestors CSP directive is usually given preference by the browser", "The browser applies whichever header was sent last in the HTTP response"],
+        answer: 2,
+        source: "Ping Identity — Clickjacking Prevention Best Practices"
+      },
+      {
+        q: "The OWASP Clickjacking Defense Cheat Sheet describes Clickjacking as also being called what?",
+        code: null,
+        opts: ["Session hijacking", "UI redress attack", "Cross-frame scripting", "Layer spoofing"],
+        answer: 1,
+        source: "OWASP Clickjacking Defense Cheat Sheet"
+      },
+      {
+        q: "According to the OWASP Cheat Sheet, which three independent mechanisms can be used together as a defense-in-depth strategy against Clickjacking?",
+        code: null,
+        opts: ["HTTPS, password hashing, and input validation", "X-Frame-Options or CSP frame-ancestors, SameSite cookie attribute, and frame-buster JavaScript", "CORS headers, CSRF tokens, and output encoding", "Rate limiting, IP blocking, and session timeouts"],
+        answer: 1,
+        source: "OWASP Clickjacking Defense Cheat Sheet"
+      }
+    ];
+
+    const clickjackingFeedbackPrompt = (score, wrongText) =>
+      `You are a CSC351 Application Security tutor at KMUTT. A student just completed a Clickjacking practice quiz before their Block 3 exam.\n\nScore: ${score}/20\nWrong answers:\n${wrongText}\n\nWrite concise exam-focused feedback in plain text only. For each wrong answer write Q[number]: then one sentence explaining why the correct answer is right and why their choice was wrong. Then write "Review focus:" naming 2-3 specific Clickjacking concepts to revisit. End with one short encouraging sentence. No markdown, no bullet symbols, no headers.`;
+
+    const quiz = new Quiz('quiz-container', questions, 'score_clickjacking', clickjackingFeedbackPrompt);
+    window._quiz = quiz;
+    quiz.build();
+  </script>
+
+</body>
+</html>
