@@ -19,7 +19,7 @@
   <div class="hero">
     <span class="hero-eyebrow">KMUTT · SIT · CSC351</span>
     <h1 class="hero-title">Block 3 Exam Prep</h1>
-    <p class="hero-sub">5 topics · 100 questions · AI-powered feedback</p>
+    <p class="hero-sub">4 topics · 80 questions · AI-powered feedback</p>
   </div>
 
   <!-- Topic grid -->
@@ -65,27 +65,30 @@
     </a>
 
     <!-- 4. Shellshock -->
-    <div class="topic-card topic-card-disabled">
+    <a class="topic-card" id="card-shellshock" href="shellshock.html" style="text-decoration: none; color: inherit;">
       <div class="topic-card-body">
+        <div style="font-size: 13px; color: #2d3748; font-weight: 500; margin-bottom: 0.75rem;">LECTURE 14</div>
         <div class="topic-card-title">Shellshock</div>
         <div class="topic-card-desc">A 25-year-old Bash bug, the CGI bridge, and how one curl command owns a server.</div>
         <div class="topic-card-footer">
-          <span class="coming-soon-badge">Coming soon</span>
+          <span class="score-badge" id="badge-shellshock" style="display:none"></span>
+          <span class="topic-card-link">Study →</span>
         </div>
       </div>
-    </div>
+    </a>
 
   </div>
 
   <script>
     (function () {
-      var topics = ['xss', 'sqli', 'clickjacking'];
+      var topics = ['xss', 'sqli', 'clickjacking', 'shellshock'];
       topics.forEach(function(topic) {
         var score = localStorage.getItem('score_' + topic);
         if (score !== null) {
           var badge = document.getElementById('badge-' + topic);
           if (badge) {
-            var pct   = Math.round((parseInt(score, 10) / 20) * 100);
+            var total = (topic === 'shellshock') ? 21 : 20;
+            var pct   = Math.round((parseInt(score, 10) / total) * 100);
             badge.textContent = pct + '%';
             badge.style.display = 'inline-block';
           }

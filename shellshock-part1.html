@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shellshock Part 1 — CSC351</title>
+  <link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="index.html">
+        CSC351
+        <span class="nav-sep">/</span>
+        <span class="nav-topic">Shellshock: Part 1</span>
+      </a>
+      <a class="nav-back" href="shellshock.html">← Shellshock Hub</a>
+    </div>
+  </nav>
+
+  <!-- Mode bar -->
+  <div class="mode-bar">
+    <div class="mode-bar-inner">
+      <span class="mode-step active" id="mode-1">Part 1 Notes</span>
+      <span class="mode-chevron">›</span>
+      <span class="mode-step" style="color: var(--text-tertiary);">Part 2 Notes & Quiz</span>
+    </div>
+  </div>
+
+  <div id="screen-notes" class="screen">
+    <div class="content">
+      
+      <div style="margin-bottom: 3rem;">
+        <h1 style="font-family: 'DM Serif Display', serif; font-size: 36px; letter-spacing: -1px; margin: 0 0 0.5rem;">Shellshock: Part 1</h1>
+        <p style="font-size: 14px; color: #2d3748; font-weight: 500; margin: 0;">Lecture 14 — CSC351 Application Security</p>
+      </div>
+
+      <!-- Section 1 — The Story Starts Here -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">The Story Starts Here</h2>
+        <p class="body-text">It's 2014. A French cybersecurity researcher is poking around in the source code of a piece of software that almost every Linux computer in the world uses every single day.</p>
+        <p class="body-text">He finds something strange.</p>
+        <p class="body-text">A bug. A really bad one.</p>
+        <p class="body-text">And then he checks the git history — the record of every change ever made to this software — and he finds that this bug has been sitting there, quietly, since 1989.</p>
+        <p class="body-text"><strong>Twenty-five years.</strong> Hidden in plain sight. In software running on millions of servers all over the world.</p>
+        <p class="body-text">That's Shellshock. And to understand why it's so dangerous, you first need to understand something much simpler — what a shell is, and how it talks to itself.</p>
+      </div>
+
+      <!-- Section 2 — What Is a Shell? -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">What Is a Shell?</h2>
+        <p class="body-text">You know how on Windows you can open a black box called Command Prompt or PowerShell and type commands?</p>
+        <p class="body-text">That black box is a shell. It's the thing that sits between you — the human — and the actual brain of the operating system called the kernel.</p>
+        <p class="body-text">The kernel is like the engine of a car. You can't just reach in and touch the engine with your bare hands. The shell is the steering wheel and pedals — the interface that lets you control the engine without touching it directly.</p>
+        <p class="body-text">Different operating systems have different shells:</p>
+        <ul class="revision-list" style="margin: 16px 0;">
+          <li><strong>Windows</strong> has PowerShell.</li>
+          <li><strong>macOS</strong> used to use Bash, then after Shellshock it switched to ZSH (which Ajan mentioned is the C shell family).</li>
+          <li><strong>Linux</strong> still uses Bash as its standard shell today.</li>
+        </ul>
+        <p class="body-text">Bash stands for **Born Again Shell**. Ajan wrote it on the slides. It's a bit of a nerdy joke — it's a rewrite of the original Unix shell (called sh), so it's "born again."</p>
+        <p class="body-text">And Bash is exactly where the Shellshock bug lives.</p>
+      </div>
+
+      <!-- Section 3 — Functions in Bash — The Innocent Part -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">Functions in Bash — The Innocent Part</h2>
+        <p class="body-text">Before you can understand the bug, you need to understand one thing Bash can do: define functions.</p>
+        <p class="body-text">A function in Bash is just like a function in any programming language. You give it a name, you say what it should do, and later you can call it by that name.</p>
+        <p class="body-text">In Bash, you define a function like this:</p>
+        <div class="code-block">
+          <pre><code>foo() { echo "hello world"; }</code></pre>
+        </div>
+        <p class="body-text">Now whenever you type <code>foo</code> in the terminal, Bash runs <code>echo "hello world"</code> and you see hello world on screen.</p>
+        <p class="body-text">Totally harmless. This is just normal Bash functionality.</p>
+      </div>
+
+      <!-- Section 4 — Parent Processes and Child Processes -->
+      <div class="section">
+        <span class="label label-concept">Processes</span>
+        <h2 class="section-heading">Parent Processes and Child Processes — The Stage Is Set</h2>
+        <p class="body-text">Here's a concept Ajan spent real time on in the lecture.</p>
+        <p class="body-text">When you open a program on your computer, that program lives in a slice of your RAM. It's a process — a running program with its own little world in memory.</p>
+        <p class="body-text">Now sometimes a process opens another process from inside itself. The new one is called the child process. The original is the parent process.</p>
+        <p class="body-text">Think of it like a manager at work. The manager has their own desk, their own files, their own knowledge. When the manager sends an employee off to do a job, that employee is the child process. They have their own workspace. They start fresh.</p>
+        <div class="callout callout-blue">
+          <strong>Here's the critical rule:</strong> functions and variables defined in the parent process do NOT automatically pass to the child process. If the manager knows a secret password, the new employee they send out doesn't automatically know it. The manager has to deliberately export it to them first.
+        </div>
+        <p class="body-text">In Bash, that export command is literally called <code>export</code>.</p>
+      </div>
+
+      <!-- Section 5 — Environment Variables -->
+      <div class="section">
+        <span class="label label-concept">Variables</span>
+        <h2 class="section-heading">Environment Variables — The Messenger</h2>
+        <p class="body-text">So how does a parent process send information to a child process?</p>
+        <p class="body-text"><strong>Through something called environment variables.</strong></p>
+        <p class="body-text">These are like little sticky notes that the parent pastes onto the child when it's created. Name=Value pairs. The child inherits all of them automatically.</p>
+        <p class="body-text">You use these all the time without knowing it. When your web browser sends an HTTP request, the web server reads headers like User-Agent and Cookie — and when it creates a child process to run a script, it passes those headers as environment variables to the child.</p>
+        <div class="callout callout-red">
+          <strong>That detail — HTTP headers becoming environment variables — is the entire bridge that makes Shellshock remotely exploitable.</strong> But we'll get to that in Part 2.
+        </div>
+      </div>
+
+      <!-- Section 6 — The Vulnerability -->
+      <div class="section">
+        <span class="label label-attack">Vulnerability</span>
+        <h2 class="section-heading">The Vulnerability — Where Bash Goes Too Far</h2>
+        <p class="body-text">Here's the bug. The actual thing Bash does wrong.</p>
+        <p class="body-text">When a child Bash process starts up, it looks at all the environment variables it inherited from the parent. For each one, it checks: "Is this a function definition?"</p>
+        <p class="body-text">It recognizes a function definition by looking for a specific pattern at the start of the value — something that looks like <code>() {</code>.</p>
+        <p class="body-text">If it sees that pattern, it thinks: "Oh! My parent exported a function to me. Let me convert this back into a real function."</p>
+        <p class="body-text">So it runs a piece of internal code called <code>parse_and_execute</code> on that value.</p>
+        <p class="body-text"><strong>And here's the bug.</strong> <code>parse_and_execute</code> doesn't stop at the end of the function.</p>
+        <p class="body-text">Imagine you receive a note from your manager that says: "Meeting at 9am. Fire the entire accounting department."</p>
+        <p class="body-text">A sensible person reads the first sentence and stops — that's the instruction they were given. But Bash reads the entire note and does everything it says.</p>
+        <p class="body-text">The function definition ends at the <code>}</code>. But Bash keeps reading. And anything written after the closing <code>}</code> gets executed as a real shell command.</p>
+        <p class="body-text"><strong>This is the Shellshock vulnerability.</strong> One extra semicolon and a command after the function body — and Bash runs it.</p>
+      </div>
+
+      <!-- Section 7 — Proof of Concept -->
+      <div class="section">
+        <span class="label label-attack">POC</span>
+        <h2 class="section-heading">The Proof of Concept Test</h2>
+        <p class="body-text">Ajan showed the exact command that proves whether a system is vulnerable. You run this in a terminal:</p>
+        <div class="code-block">
+          <pre><code>env x='() { :; }; echo vulnerable' bash -c "echo test"</code></pre>
+        </div>
+        <p class="body-text">Let's break down what this does, piece by piece, so it actually makes sense:</p>
+        <ul class="revision-list" style="margin: 16px 0;">
+          <li><strong>env</strong> — sets an environment variable for just this one command.</li>
+          <li><strong>x='() { :; }; echo vulnerable'</strong> — sets a variable called x. Its value looks like a function definition (() { :; } — a function that does nothing, the : is Bash's no-op). But after the closing } there's a semicolon and then echo vulnerable.</li>
+          <li><strong>bash -c "echo test"</strong> — starts a new Bash process and tells it to run echo test.</li>
+        </ul>
+        
+        <p class="body-text"><strong>If the system is vulnerable:</strong> the new Bash process starts, imports the environment variable x, sees the <code>() {</code> pattern, decides it's a function, and runs <code>parse_and_execute</code> on it. <code>parse_and_execute</code> doesn't stop at }. It runs <code>echo vulnerable</code>. Then it runs <code>echo test</code>.</p>
+        <p class="body-text">Output: **<code>vulnerable</code>** then **<code>test</code>**.</p>
+        
+        <p class="body-text"><strong>If the system is patched:</strong> Bash imports the variable, sees the function, stops reading at }, and ignores the <code>echo vulnerable</code>. It only runs <code>echo test</code>.</p>
+        <p class="body-text">Output: **<code>test</code>**.</p>
+        
+        <p class="body-text">That's the entire test. You can tell in one second whether a machine is vulnerable.</p>
+      </div>
+
+      <!-- Section 8 — Why Is This Dangerous? -->
+      <div class="section">
+        <span class="label label-warn">High Risk</span>
+        <h2 class="section-heading">Why Is This Dangerous Beyond a Local Terminal?</h2>
+        <p class="body-text">Okay, so you can inject a command into a new Bash process. So what? An attacker still needs to be logged in to run the env command, right?</p>
+        <p class="body-text"><strong>Wrong. And this is where it gets scary.</strong></p>
+        <p class="body-text">Remember how environment variables are passed from parent to child? And remember how HTTP request headers become environment variables when a web server handles a request?</p>
+        
+        <p class="body-text"><strong>Here's the attack chain:</strong></p>
+        <div class="defense-steps" style="margin: 20px 0;">
+          <div class="defense-step">
+            <span class="defense-step-badge" style="background: var(--accent-light); color: var(--accent); border-color: #c2c8d0;">Step 1</span>
+            <div>
+              <div class="defense-step-title">The web server receives an HTTP request.</div>
+            </div>
+          </div>
+          <div class="defense-step">
+            <span class="defense-step-badge" style="background: var(--accent-light); color: var(--accent); border-color: #c2c8d0;">Step 2</span>
+            <div>
+              <div class="defense-step-title">The web server creates a child process to run a CGI script.</div>
+              <div class="defense-step-text">CGI stands for Common Gateway Interface — an old-school way of generating dynamic web content using shell scripts. Still used on many servers.</div>
+            </div>
+          </div>
+          <div class="defense-step">
+            <span class="defense-step-badge" style="background: var(--accent-light); color: var(--accent); border-color: #c2c8d0;">Step 3</span>
+            <div>
+              <div class="defense-step-title">The web server passes all the HTTP request headers as environment variables.</div>
+              <div class="defense-step-text">User-Agent, Referer, Cookie, etc. become environment variables inside that child process.</div>
+            </div>
+          </div>
+          <div class="defense-step">
+            <span class="defense-step-badge" style="background: var(--accent-light); color: var(--accent); border-color: #c2c8d0;">Step 4</span>
+            <div>
+              <div class="defense-step-title">The child process runs Bash, parses environment variables, and executes the payload.</div>
+              <div class="defense-step-text">The attacker just executed code on the server. From a browser. Without any login. Without any credentials. All they had to do was put the attack payload in an HTTP header.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Continue to Part 2 -->
+      <div class="btn-ready-wrap">
+        <a class="btn btn-primary btn-ready" href="shellshock-part2.html">Next: Continue to Part 2 →</a>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

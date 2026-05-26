@@ -54,14 +54,26 @@ class Quiz {
         </button>
       `).join('');
 
+      let expHtml = '';
+      const explanationText = q.explanation || q.exp;
+      if (explanationText) {
+        expHtml = `
+          <div class="q-explanation" id="exp-${qi}">
+            <div class="q-explanation-label">Explanation</div>
+            ${this._esc(explanationText)}
+          </div>
+        `;
+      }
+
       card.innerHTML = `
         <div class="q-number">Question ${qi + 1} of ${this.questions.length}</div>
         <div class="q-text">${this._esc(q.q)}</div>
-        <div class="q-source">${this._esc(q.source)}</div>
+        <div class="q-source">${this._esc(q.source || q.src || '')}</div>
         ${codeHtml}
         <div class="q-options">
           ${optionsHtml}
         </div>
+        ${expHtml}
       `;
 
       container.appendChild(card);
@@ -126,7 +138,7 @@ class Quiz {
 
     this.questions.forEach((q, qi) => {
       const selected = this.answers[qi];
-      const correct  = q.answer;
+      const correct  = q.answer !== undefined ? q.answer : q.ans;
       const isRight  = selected === correct;
 
       if (isRight) {
@@ -150,6 +162,11 @@ class Quiz {
           btn.classList.add('dimmed');
         }
       });
+
+      const expEl = document.getElementById(`exp-${qi}`);
+      if (expEl) {
+        expEl.classList.add('visible');
+      }
     });
 
     this.saveScore(score);

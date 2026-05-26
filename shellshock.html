@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shellshock Topic Hub — CSC351</title>
+  <link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="index.html">
+        CSC351
+        <span class="nav-sep">/</span>
+        <span class="nav-topic">Shellshock Hub</span>
+      </a>
+      <a class="nav-back" href="index.html">← All topics</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero" style="padding-top: 48px;">
+    <span class="hero-eyebrow">LECTURE 14 & 15</span>
+    <h1 class="hero-title" style="font-family: 'DM Serif Display', serif;">Shellshock Vulnerability</h1>
+    <p class="hero-sub">Choose a part below to study. A unified practice quiz is available at the end of Part 2.</p>
+  </div>
+
+  <!-- Cards Grid -->
+  <div class="topic-grid" style="margin-top: 36px;">
+
+    <!-- Part 1 Card -->
+    <a class="topic-card" href="shellshock-part1.html" style="text-decoration: none; color: inherit;">
+      <div class="topic-card-body">
+        <div style="font-size: 13px; color: #2d3748; font-weight: 500; margin-bottom: 0.75rem;">PART 1 · LECTURE 14</div>
+        <div class="topic-card-title">Concept & Vulnerability</div>
+        <div class="topic-card-desc">Operating system shells, Bash functions, parent/child process execution environments, environment variable propagation, and the parse_and_execute parser flaw.</div>
+        <div class="topic-card-footer">
+          <span class="topic-card-link">Study Notes →</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Part 2 Card -->
+    <a class="topic-card" href="shellshock-part2.html" style="text-decoration: none; color: inherit;">
+      <div class="topic-card-body">
+        <div style="font-size: 13px; color: #2d3748; font-weight: 500; margin-bottom: 0.75rem;">PART 2 · LECTURE 15</div>
+        <div class="topic-card-title">Live Attack & Quiz</div>
+        <div class="topic-card-desc">The CGI-to-Bash environment bridge, Curl payload headers injection, filesystem reads, interactive reverse shells, and the 21-question unified practice quiz.</div>
+        <div class="topic-card-footer">
+          <span class="score-badge" id="badge-shellshock" style="display:none"></span>
+          <span class="topic-card-link">Study & Quiz →</span>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <script>
+    (function () {
+      var score = localStorage.getItem('score_shellshock');
+      if (score !== null) {
+        var badge = document.getElementById('badge-shellshock');
+        if (badge) {
+          var pct = Math.round((parseInt(score, 10) / 21) * 100);
+          badge.textContent = pct + '%';
+          badge.style.display = 'inline-block';
+        }
+      }
+    })();
+  </script>
+
+</body>
+</html>

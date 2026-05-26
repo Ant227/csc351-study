@@ -990,3 +990,28 @@ pre code {
     padding: 0 16px;
   }
 }
+
+/* ─── Question Explanations ─────────────────────────────── */
+.q-explanation {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  display: none;
+}
+.q-explanation.visible {
+  display: block;
+}
+.q-explanation-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+
