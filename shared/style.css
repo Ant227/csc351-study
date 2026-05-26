@@ -181,7 +181,7 @@ a { color: inherit; }
 /* ─── Body text ─────────────────────────────────────────── */
 .body-text {
   font-size: 15px;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   line-height: 1.75;
   margin-bottom: 16px;
 }
