@@ -38,28 +38,28 @@
       </div>
     </div>
 
-    <!-- 2. Clickjacking -->
-    <div class="topic-card" id="card-clickjacking">
-      <div class="topic-card-body">
-        <div style="font-size: 13px; color: #9a968f; font-weight: 500; margin-bottom: 0.75rem;">LECTURE 13</div>
-        <div class="topic-card-title">Clickjacking</div>
-        <div class="topic-card-desc">Invisible iframes, stolen clicks, and three generations of defense.</div>
-        <div class="topic-card-footer">
-          <span class="score-badge" id="badge-clickjacking" style="display:none"></span>
-          <a class="topic-card-link" href="clickjacking.html">Study →</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. SQL Injection -->
+    <!-- 2. SQL Injection -->
     <div class="topic-card" id="card-sqli">
       <div class="topic-card-body">
-        <div style="font-size: 13px; color: #9a968f; font-weight: 500; margin-bottom: 0.75rem;">LECTURE 12</div>
+        <div style="font-size: 13px; color: #2d3748; font-weight: 500; margin-bottom: 0.75rem;">LECTURE 12</div>
         <div class="topic-card-title">SQL Injection</div>
         <div class="topic-card-desc">Tautology attacks, string concatenation bugs, and why parameterized queries are the only real fix.</div>
         <div class="topic-card-footer">
           <span class="score-badge" id="badge-sqli" style="display:none"></span>
           <a class="topic-card-link" href="sqli.html">Study →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Clickjacking -->
+    <div class="topic-card" id="card-clickjacking">
+      <div class="topic-card-body">
+        <div style="font-size: 13px; color: #2d3748; font-weight: 500; margin-bottom: 0.75rem;">LECTURE 13</div>
+        <div class="topic-card-title">Clickjacking</div>
+        <div class="topic-card-desc">Invisible iframes, stolen clicks, and three generations of defense.</div>
+        <div class="topic-card-footer">
+          <span class="score-badge" id="badge-clickjacking" style="display:none"></span>
+          <a class="topic-card-link" href="clickjacking.html">Study →</a>
         </div>
       </div>
     </div>
@@ -79,7 +79,7 @@
 
   <script>
     (function () {
-      var topics = ['xss', 'clickjacking', 'sqli'];
+      var topics = ['xss', 'sqli', 'clickjacking'];
       topics.forEach(function(topic) {
         var score = localStorage.getItem('score_' + topic);
         if (score !== null) {
