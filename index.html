@@ -54,11 +54,11 @@
       
       <div style="height: 1px; background: var(--border); margin: 8px 0;"></div>
       
-      <div class="drawer-menu-item" style="opacity: 0.6; cursor: not-allowed;">
+      <a class="drawer-menu-item" href="exam-questions.html">
         <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Part 2 · Exam Prep</span>
         Possible exam questions
-        <span style="align-self: flex-start; background: var(--accent-light); color: var(--accent); font-size: 9px; padding: 1px 6px; border-radius: 4px; font-weight: 600; border: 1px solid var(--border); margin-top: 4px;">Coming Soon</span>
-      </div>
+        <span style="align-self: flex-start; background: var(--accent); color: #fff; font-size: 9px; padding: 1px 6px; border-radius: 4px; font-weight: 600; margin-top: 4px;">Active</span>
+      </a>
     </nav>
   </div>
 
@@ -71,10 +71,10 @@
       </div>
       <a class="nav-brand" href="index.html">Ant</a>
       <div class="nav-menu-right">
-        <span style="color: var(--text-tertiary); cursor: not-allowed; display: inline-flex; align-items: center;">
-          Part 2 - Possible exam questions
-          <span style="background: var(--accent-light); color: var(--accent); font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 600; border: 1px solid var(--border); margin-left: 8px;">Coming Soon</span>
-        </span>
+        <a href="exam-questions.html" style="color: var(--accent); text-decoration: none; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px;">
+          Part 2 — Exam Prep
+          <span style="background: var(--accent); color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Active</span>
+        </a>
       </div>
     </div>
   </nav>
@@ -163,9 +163,9 @@
       </div>
     </a>
 
-    <!-- 5. Possible Exam Questions (Coming Soon) -->
-    <div style="display: flex; flex-direction: column; opacity: 0.75; cursor: not-allowed;">
-      <div style="border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: #000; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center;">
+    <!-- 5. Possible Exam Questions (ACTIVE) -->
+    <a href="exam-questions.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+      <div style="border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: #000; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-card)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
         <img src="shared/images/exam_questions.png" alt="Exam Questions Illustration" style="width: 100%; height: 100%; object-fit: cover;">
       </div>
       <div style="text-align: center; margin-top: 20px;">
@@ -174,9 +174,12 @@
         <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; max-width: 440px; margin: 0 auto 16px;">
           Curated selection of highly probable Block 3 exam scenarios, curl request payload tracing, and reverse shell analysis models.
         </p>
-        <span style="font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; background: var(--accent-light); padding: 4px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);">Coming Soon</span>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 2px;">
+          <span style="font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; background: var(--accent-light); padding: 4px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);">Active Practice</span>
+          <span style="font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid var(--accent); padding-bottom: 2px;">Open Hub →</span>
+        </div>
       </div>
-    </div>
+    </a>
 
   </div>
 
