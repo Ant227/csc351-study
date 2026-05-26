@@ -64,6 +64,52 @@ a { color: inherit; }
   position: relative;
 }
 
+.nav-menu-left {
+  display: none;
+}
+
+.nav-menu-right {
+  display: none;
+}
+
+@media (min-width: 992px) {
+  .nav-menu-left {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-secondary);
+  }
+  .nav-menu-left a {
+    text-decoration: none;
+    transition: color 150ms;
+  }
+  .nav-menu-left a:hover {
+    color: var(--accent);
+  }
+  .nav-menu-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-secondary);
+    margin-left: auto;
+  }
+  .nav-menu-right a {
+    text-decoration: none;
+    transition: color 150ms;
+  }
+  .nav-menu-right a:hover {
+    color: var(--accent);
+  }
+}
+
 .nav-brand {
   position: absolute;
   left: 50%;
@@ -95,6 +141,12 @@ a { color: inherit; }
   text-decoration: none;
 }
 .nav-back:hover { text-decoration: underline; }
+
+@media (min-width: 992px) {
+  .nav-back {
+    margin-left: 24px !important;
+  }
+}
 
 /* ─── Mode indicator ────────────────────────────────────── */
 .mode-bar {
