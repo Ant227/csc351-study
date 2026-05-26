@@ -8,8 +8,19 @@
   <style>
     @media (min-width: 768px) {
       .topic-gallery-grid {
-        grid-template-columns: 1fr 1fr 1fr !important;
+        grid-template-columns: 1fr 1fr !important;
         gap: 36px !important;
+        max-width: 1000px !important;
+      }
+      .exam-prep-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 36px !important;
+        max-width: 1000px !important;
+      }
+    }
+    @media (min-width: 992px) {
+      .topic-gallery-grid {
+        grid-template-columns: 1fr 1fr 1fr 1fr !important;
         max-width: 1200px !important;
       }
     }
@@ -54,6 +65,11 @@
       
       <div style="height: 1px; background: var(--border); margin: 8px 0;"></div>
       
+      <a class="drawer-menu-item" href="mock-exam.html">
+        <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Part 1 · Exam Practice</span>
+        Mock Exam (20 MCQs)
+      </a>
+
       <a class="drawer-menu-item" href="exam-questions.html">
         <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Part 2 · Exam Prep</span>
         Possible exam questions
@@ -88,8 +104,13 @@
     </p>
   </div>
 
+  <!-- ==================== PART 1: LEARNING LECTURES ==================== -->
+  <div style="max-width: 960px; margin: 40px auto 20px; padding: 0 24px;">
+    <h2 style="font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--text-primary); border-bottom: 2px solid var(--border); padding-bottom: 8px; letter-spacing: -0.5px;">Part 1 — Learning Lecture</h2>
+  </div>
+
   <!-- Gallery Grid (Curated fine-art style borderless columns) -->
-  <div class="topic-gallery-grid" style="display: grid; grid-template-columns: 1fr; gap: 48px; max-width: 960px; margin: 0 auto 80px; padding: 0 24px;">
+  <div class="topic-gallery-grid" style="display: grid; grid-template-columns: 1fr; gap: 48px; max-width: 960px; margin: 0 auto 60px; padding: 0 24px;">
     
     <!-- 1. XSS -->
     <a href="xss.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
@@ -162,8 +183,34 @@
         </div>
       </div>
     </a>
+  </div>
 
-    <!-- 5. Possible Exam Questions (ACTIVE) -->
+  <!-- ==================== PART 2: EXAM ==================== -->
+  <div style="max-width: 960px; margin: 60px auto 20px; padding: 0 24px;">
+    <h2 style="font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--text-primary); border-bottom: 2px solid var(--border); padding-bottom: 8px; letter-spacing: -0.5px;">Part 2 — Exam</h2>
+  </div>
+
+  <div class="exam-prep-grid" style="display: grid; grid-template-columns: 1fr; gap: 48px; max-width: 960px; margin: 0 auto 80px; padding: 0 24px;">
+    
+    <!-- A. Part 1 Mock Exam -->
+    <a href="mock-exam.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+      <div style="border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: #000; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-card)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+        <img src="shared/images/mock_exam.png" alt="Mock Exam Illustration" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div style="text-align: center; margin-top: 20px;">
+        <div style="font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">PART 1 · MOCK EXAM</div>
+        <h2 style="font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text-primary); font-weight: 700; margin-bottom: 8px;">Part 1 Mock Exam</h2>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; max-width: 440px; margin: 0 auto 16px;">
+          20 mixed all-topic MCQs to test you with secure AI-powered tutor feedback so you can identify which areas require further review.
+        </p>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 2px;">
+          <span class="score-badge" id="badge-mock" style="display:none; font-size: 10px; padding: 2px 6px; font-weight: 600; background: var(--accent-light); color: var(--accent); border-radius: var(--radius-sm); border: 1px solid var(--border); margin-right: 4px;"></span>
+          <span style="font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid var(--accent); padding-bottom: 2px;">Take Mock Exam →</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- B. Possible Exam Questions -->
     <a href="exam-questions.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
       <div style="border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: #000; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-card)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
         <img src="shared/images/exam_questions.png" alt="Exam Questions Illustration" style="width: 100%; height: 100%; object-fit: cover;">
@@ -175,17 +222,15 @@
           Curated selection of highly probable Block 3 exam scenarios, curl request payload tracing, and reverse shell analysis models.
         </p>
         <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 2px;">
-          <span style="font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; background: var(--accent-light); padding: 4px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);">Active Practice</span>
           <span style="font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid var(--accent); padding-bottom: 2px;">Open Hub →</span>
         </div>
       </div>
     </a>
-
   </div>
 
   <script>
     (function () {
-      var topics = ['xss', 'sqli', 'clickjacking', 'shellshock'];
+      var topics = ['xss', 'sqli', 'clickjacking', 'shellshock', 'mock'];
       topics.forEach(function(topic) {
         var score = localStorage.getItem('score_' + topic);
         if (score !== null) {

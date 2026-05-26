@@ -171,13 +171,8 @@ class Quiz {
 
     this.saveScore(score);
 
-    /* Swap submit for results button */
-    if (this._submitBtn) {
-      this._submitBtn.textContent = 'See results →';
-      this._submitBtn.disabled = false;
-      this._submitBtn.removeEventListener('click', () => this.submit());
-      this._submitBtn.onclick = () => this.showResults(score, wrong);
-    }
+    /* Go to results screen immediately on submit! */
+    this.showResults(score, wrong);
   }
 
   /* ── Transition to results screen ──────────────────── */
@@ -185,13 +180,21 @@ class Quiz {
     updateMode(3);
     this._transitionTo(this._quizEl, this._resultsEl);
 
-    /* Score display */
-    const scoreNum  = document.getElementById('score-number');
-    const scorePct  = document.getElementById('score-pct');
+    /* Score display (supports both topic quiz and mock exam IDs) */
+    const scoreNum  = document.getElementById('score-number') || document.getElementById('score-fraction');
+    const scorePct  = document.getElementById('score-pct') || document.getElementById('score-text');
     const scoreGrade = document.getElementById('score-grade');
 
-    if (scoreNum)  scoreNum.textContent  = score;
-    if (scorePct)  scorePct.textContent  = Math.round((score / this.questions.length) * 100) + '%';
+    if (scoreNum) {
+      if (scoreNum.id === 'score-fraction') {
+        scoreNum.textContent = `${score} of ${this.questions.length} correct`;
+      } else {
+        scoreNum.textContent = score;
+      }
+    }
+    if (scorePct) {
+      scorePct.textContent = Math.round((score / this.questions.length) * 100) + '%';
+    }
     if (scoreGrade) {
       const pct = Math.round((score / this.questions.length) * 100);
       let grade = 'Keep studying';
@@ -201,7 +204,23 @@ class Quiz {
       scoreGrade.textContent = grade;
     }
 
+    /* Change the sticky topbar button to "View Results →" for easy return during review */
+    if (this._submitBtn) {
+      this._submitBtn.textContent = 'View Results →';
+      this._submitBtn.disabled = false;
+      this._submitBtn.onclick = () => {
+        updateMode(3);
+        this._transitionTo(this._quizEl, this._resultsEl);
+      };
+    }
+
     this.fetchFeedback(score, wrong);
+  }
+
+  /* ── Review graded answers ──────────────────────────── */
+  reviewAnswers() {
+    updateMode(2);
+    this._transitionTo(this._resultsEl, this._quizEl);
   }
 
   /* ── Fetch AI feedback ──────────────────────────────── */
