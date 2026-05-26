@@ -8,8 +8,9 @@
   <style>
     @media (min-width: 768px) {
       .topic-gallery-grid {
-        grid-template-columns: 1fr 1fr !important;
-        gap: 48px !important;
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 36px !important;
+        max-width: 1200px !important;
       }
     }
   </style>
@@ -34,10 +35,10 @@
 
   <!-- Hero / Header Section (Inspired by Mennour fine art gallery) -->
   <div style="text-align: center; margin-top: 60px; margin-bottom: 48px; border-bottom: 1px solid var(--border); padding-bottom: 32px;">
-    <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent);">KMUTT · SIT · CSC351</span>
+    <span style="font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase;">KMUTT · SIT · CSC351</span>
     <h1 style="font-family: 'DM Serif Display', serif; font-size: 38px; color: var(--text-primary); margin-top: 8px; margin-bottom: 12px; letter-spacing: -0.5px;">Block 3 Exam Prep</h1>
     <p style="font-size: 14px; color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6; padding: 0 16px;">
-      4 comprehensive web security topics, practice quizzes, and secure AI-powered tutor feedback.
+      5 comprehensive web security topics, practice quizzes, and secure AI-powered tutor feedback.
     </p>
   </div>
 
@@ -115,6 +116,21 @@
         </div>
       </div>
     </a>
+
+    <!-- 5. Possible Exam Questions (Coming Soon) -->
+    <div style="display: flex; flex-direction: column; opacity: 0.75; cursor: not-allowed;">
+      <div style="border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: #000; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center;">
+        <img src="shared/images/exam_questions.png" alt="Exam Questions Illustration" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div style="text-align: center; margin-top: 20px;">
+        <div style="font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">PART 2 · EXAM PREP</div>
+        <h2 style="font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text-primary); font-weight: 700; margin-bottom: 8px;">Possible exam questions</h2>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; max-width: 440px; margin: 0 auto 16px;">
+          Curated selection of highly probable Block 3 exam scenarios, curl request payload tracing, and reverse shell analysis models.
+        </p>
+        <span style="font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; background: var(--accent-light); padding: 4px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);">Coming Soon</span>
+      </div>
+    </div>
 
   </div>
 
