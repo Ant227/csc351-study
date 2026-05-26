@@ -1,12 +1,3 @@
 {
-  "buildCommand": "echo 'Static site'",
-  "public": ".",
-  "functions": {
-    "api/feedback.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
-  "env": [
-    "ANTHROPIC_API_KEY"
-  ]
+  "public": "."
 }
