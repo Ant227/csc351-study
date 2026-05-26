@@ -905,6 +905,8 @@ pre code {
   font-weight: 500;
   color: var(--accent);
   text-decoration: none;
+  margin-left: auto;
+  cursor: pointer;
 }
 .topic-card-link:hover { text-decoration: underline; }
 
