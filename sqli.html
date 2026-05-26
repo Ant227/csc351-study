@@ -5,12 +5,58 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SQL Injection — Lecture 12 · CSC351</title>
   <link rel="stylesheet" href="shared/style.css">
+  <script src="shared/menu.js" defer></script>
 </head>
 <body>
 
+  <!-- Sidebar Drawer Navigation -->
+  <div class="drawer-backdrop" id="menu-backdrop"></div>
+  <div class="drawer" id="menu-drawer">
+    <button class="drawer-close" id="menu-close" aria-label="Close menu">✕</button>
+    <a class="drawer-logo" href="index.html">Ant</a>
+    <nav class="drawer-menu">
+      <a class="drawer-menu-item" href="index.html">Home Dashboard</a>
+      
+      <div style="height: 1px; background: var(--border); margin: 8px 0;"></div>
+      
+      <a class="drawer-menu-item" href="xss.html">
+        <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Lecture 11</span>
+        XSS — Cross-Site Scripting
+      </a>
+      
+      <a class="drawer-menu-item" href="sqli.html" style="color: var(--accent);">
+        <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Lecture 12</span>
+        SQL Injection
+      </a>
+      
+      <a class="drawer-menu-item" href="clickjacking.html">
+        <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Lecture 13</span>
+        Clickjacking
+      </a>
+      
+      <div class="drawer-menu-item">
+        <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Lecture 14 & 15</span>
+        <a href="shellshock.html" style="text-decoration: none; color: inherit; font-weight: 600;">Shellshock Hub</a>
+        <div class="drawer-sub-menu">
+          <a class="drawer-sub-item" href="shellshock-part1.html">Part 1: Concept & Vulnerability</a>
+          <a class="drawer-sub-item" href="shellshock-part2.html">Part 2: Notes & Quiz</a>
+        </div>
+      </div>
+      
+      <div style="height: 1px; background: var(--border); margin: 8px 0;"></div>
+      
+      <div class="drawer-menu-item" style="opacity: 0.6; cursor: not-allowed;">
+        <span style="font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Part 2 · Exam Prep</span>
+        Possible exam questions
+        <span style="align-self: flex-start; background: var(--accent-light); color: var(--accent); font-size: 9px; padding: 1px 6px; border-radius: 4px; font-weight: 600; border: 1px solid var(--border); margin-top: 4px;">Coming Soon</span>
+      </div>
+    </nav>
+  </div>
+
 <nav class="nav">
   <div class="nav-inner">
-    <div class="nav-menu-left">
+    <button class="nav-menu-toggle" id="menu-toggle" aria-label="Open menu">☰</button>
+    <div class="nav-menu-left" style="margin-left: 48px;">
       <a href="index.html">Topics</a>
     </div>
     <a class="nav-brand" href="index.html">Ant</a>

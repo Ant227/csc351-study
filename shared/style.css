@@ -1125,3 +1125,142 @@ pre code {
   }
 }
 
+/* ─── Gallery Flex Centering ─────────────────────────────── */
+@media (min-width: 768px) {
+  .topic-gallery-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 40px !important;
+    max-width: 1200px !important;
+  }
+  .topic-gallery-grid > a, .topic-gallery-grid > div {
+    width: calc((100% - 80px) / 3) !important;
+    min-width: 280px !important;
+  }
+}
+
+/* ─── Hamburger Drawer Menu ──────────────────────────────── */
+.nav-menu-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 24px;
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 105;
+  transition: color 150ms;
+}
+.nav-menu-toggle:hover {
+  color: var(--accent);
+}
+
+.drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.drawer-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 320px;
+  height: 100vh;
+  background: var(--bg);
+  box-shadow: 10px 0 30px rgba(0,0,0,0.05);
+  z-index: 1000;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  padding: 32px 24px;
+}
+.drawer.open {
+  left: 0;
+}
+
+.drawer-close {
+  align-self: flex-end;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: color 150ms;
+  margin-bottom: 24px;
+}
+.drawer-close:hover {
+  color: var(--accent);
+}
+
+.drawer-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--accent);
+  text-decoration: none;
+  margin-bottom: 32px;
+}
+
+.drawer-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  padding-bottom: 40px;
+}
+
+.drawer-menu-item {
+  text-decoration: none;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  transition: color 150ms, padding-left 150ms;
+  display: flex;
+  flex-direction: column;
+}
+.drawer-menu-item:hover {
+  color: var(--accent);
+  padding-left: 4px;
+}
+
+.drawer-sub-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-left: 16px;
+  margin-top: 8px;
+  border-left: 1px solid var(--border);
+  padding-left: 12px;
+}
+.drawer-sub-item {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  transition: color 150ms;
+}
+.drawer-sub-item:hover {
+  color: var(--accent);
+}
+
