@@ -1,6 +1,5 @@
 {
   "name": "csc351-study",
   "version": "1.0.0",
-  "description": "CSC351 Application Security Study Website",
-  "type": "module"
+  "description": "CSC351 Application Security Study Website"
 }
