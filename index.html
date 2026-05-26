@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSC351 — Block 3 Exam Prep</title>
   <link rel="stylesheet" href="shared/style.css">
+  <style>
+    @media (min-width: 768px) {
+      .topic-gallery-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 48px !important;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -15,64 +23,86 @@
     </div>
   </nav>
 
-  <!-- Hero -->
-  <div class="hero">
-    <span class="hero-eyebrow">KMUTT · SIT · CSC351</span>
-    <h1 class="hero-title">Block 3 Exam Prep</h1>
-    <p class="hero-sub">4 topics · 80 questions · AI-powered feedback</p>
+  <!-- Hero / Header Section (Inspired by Mennour fine art gallery) -->
+  <div style="text-align: center; margin-top: 60px; margin-bottom: 48px; border-bottom: 1px solid var(--border); padding-bottom: 32px;">
+    <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent);">KMUTT · SIT · CSC351</span>
+    <h1 style="font-family: 'DM Serif Display', serif; font-size: 38px; color: var(--text-primary); margin-top: 8px; margin-bottom: 12px; letter-spacing: -0.5px;">Block 3 Exam Prep</h1>
+    <p style="font-size: 14px; color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6; padding: 0 16px;">
+      4 comprehensive web security topics, practice quizzes, and secure AI-powered tutor feedback.
+    </p>
   </div>
 
-  <!-- Topic grid -->
-  <div class="topic-grid">
-
+  <!-- Gallery Grid (Curated fine-art style borderless columns) -->
+  <div class="topic-gallery-grid" style="display: grid; grid-template-columns: 1fr; gap: 48px; max-width: 960px; margin: 0 auto 80px; padding: 0 24px;">
+    
     <!-- 1. XSS -->
-    <a class="topic-card" id="card-xss" href="xss.html" style="text-decoration: none; color: inherit;">
-      <div class="topic-card-body">
-        <div style="font-size: 13px; color: #2d3748; font-weight: 500; margin-bottom: 0.75rem;">LECTURE 11</div>
-        <div class="topic-card-title">XSS — Cross-Site Scripting</div>
-        <div class="topic-card-desc">How attackers inject malicious scripts into trusted pages and why the browser runs them.</div>
-        <div class="topic-card-footer">
-          <span class="score-badge" id="badge-xss" style="display:none"></span>
-          <span class="topic-card-link">Study →</span>
+    <a href="xss.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+      <div style="border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: #000; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-card)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+        <img src="shared/images/xss.png" alt="XSS Illustration" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div style="text-align: center; margin-top: 20px;">
+        <div style="font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px;">LECTURE 11</div>
+        <h2 style="font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text-primary); font-weight: 700; margin-bottom: 8px;">XSS — Cross-Site Scripting</h2>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; max-width: 440px; margin: 0 auto 16px;">
+          How attackers inject malicious scripts into trusted pages and why the browser runs them.
+        </p>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 2px;">
+          <span class="score-badge" id="badge-xss" style="display:none; font-size: 10px; padding: 2px 6px; font-weight: 600; background: var(--accent-light); color: var(--accent); border-radius: var(--radius-sm); border: 1px solid var(--border); margin-right: 4px;"></span>
+          <span style="font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid var(--accent); padding-bottom: 2px;">Study Topic →</span>
         </div>
       </div>
     </a>
 
     <!-- 2. SQL Injection -->
-    <a class="topic-card" id="card-sqli" href="sqli.html" style="text-decoration: none; color: inherit;">
-      <div class="topic-card-body">
-        <div style="font-size: 13px; color: #2d3748; font-weight: 500; margin-bottom: 0.75rem;">LECTURE 12</div>
-        <div class="topic-card-title">SQL Injection</div>
-        <div class="topic-card-desc">Tautology attacks, string concatenation bugs, and why parameterized queries are the only real fix.</div>
-        <div class="topic-card-footer">
-          <span class="score-badge" id="badge-sqli" style="display:none"></span>
-          <span class="topic-card-link">Study →</span>
+    <a href="sqli.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+      <div style="border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: #000; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-card)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+        <img src="shared/images/sqli.png" alt="SQL Injection Illustration" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div style="text-align: center; margin-top: 20px;">
+        <div style="font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px;">LECTURE 12</div>
+        <h2 style="font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text-primary); font-weight: 700; margin-bottom: 8px;">SQL Injection</h2>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; max-width: 440px; margin: 0 auto 16px;">
+          Tautology attacks, string concatenation bugs, and why parameterized queries are the only real fix.
+        </p>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 2px;">
+          <span class="score-badge" id="badge-sqli" style="display:none; font-size: 10px; padding: 2px 6px; font-weight: 600; background: var(--accent-light); color: var(--accent); border-radius: var(--radius-sm); border: 1px solid var(--border); margin-right: 4px;"></span>
+          <span style="font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid var(--accent); padding-bottom: 2px;">Study Topic →</span>
         </div>
       </div>
     </a>
 
     <!-- 3. Clickjacking -->
-    <a class="topic-card" id="card-clickjacking" href="clickjacking.html" style="text-decoration: none; color: inherit;">
-      <div class="topic-card-body">
-        <div style="font-size: 13px; color: #2d3748; font-weight: 500; margin-bottom: 0.75rem;">LECTURE 13</div>
-        <div class="topic-card-title">Clickjacking</div>
-        <div class="topic-card-desc">Invisible iframes, stolen clicks, and three generations of defense.</div>
-        <div class="topic-card-footer">
-          <span class="score-badge" id="badge-clickjacking" style="display:none"></span>
-          <span class="topic-card-link">Study →</span>
+    <a href="clickjacking.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+      <div style="border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: #000; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-card)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+        <img src="shared/images/clickjacking.png" alt="Clickjacking Illustration" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div style="text-align: center; margin-top: 20px;">
+        <div style="font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px;">LECTURE 13</div>
+        <h2 style="font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text-primary); font-weight: 700; margin-bottom: 8px;">Clickjacking</h2>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; max-width: 440px; margin: 0 auto 16px;">
+          Invisible iframes, stolen clicks, and three generations of defense.
+        </p>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 2px;">
+          <span class="score-badge" id="badge-clickjacking" style="display:none; font-size: 10px; padding: 2px 6px; font-weight: 600; background: var(--accent-light); color: var(--accent); border-radius: var(--radius-sm); border: 1px solid var(--border); margin-right: 4px;"></span>
+          <span style="font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid var(--accent); padding-bottom: 2px;">Study Topic →</span>
         </div>
       </div>
     </a>
 
     <!-- 4. Shellshock -->
-    <a class="topic-card" id="card-shellshock" href="shellshock.html" style="text-decoration: none; color: inherit;">
-      <div class="topic-card-body">
-        <div style="font-size: 13px; color: #2d3748; font-weight: 500; margin-bottom: 0.75rem;">LECTURE 14</div>
-        <div class="topic-card-title">Shellshock</div>
-        <div class="topic-card-desc">A 25-year-old Bash bug, the CGI bridge, and how one curl command owns a server.</div>
-        <div class="topic-card-footer">
-          <span class="score-badge" id="badge-shellshock" style="display:none"></span>
-          <span class="topic-card-link">Study →</span>
+    <a href="shellshock.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+      <div style="border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: #000; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-card)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+        <img src="shared/images/shellshock.png" alt="Shellshock Illustration" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div style="text-align: center; margin-top: 20px;">
+        <div style="font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px;">LECTURE 14 & 15</div>
+        <h2 style="font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text-primary); font-weight: 700; margin-bottom: 8px;">Shellshock</h2>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; max-width: 440px; margin: 0 auto 16px;">
+          A 25-year-old Bash bug, the CGI bridge, and how one curl command owns a server.
+        </p>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 2px;">
+          <span class="score-badge" id="badge-shellshock" style="display:none; font-size: 10px; padding: 2px 6px; font-weight: 600; background: var(--accent-light); color: var(--accent); border-radius: var(--radius-sm); border: 1px solid var(--border); margin-right: 4px;"></span>
+          <span style="font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid var(--accent); padding-bottom: 2px;">Study Topic →</span>
         </div>
       </div>
     </a>
@@ -98,11 +128,10 @@
   </script>
 
   <!-- Footer -->
-  <footer class="footer">
+  <footer class="footer" style="margin-top: 80px;">
     <div class="footer-inner">
       <a class="footer-logo" href="index.html">
         <span class="footer-logo-text">Ant</span>
-        <span class="footer-logo-sub">AppSec Hub</span>
       </a>
       <div class="footer-meta">
         © 2026 Ant. Built for CSC351 Application Security, SIT Faculty, KMUTT.
