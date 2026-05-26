@@ -36,7 +36,7 @@ html { font-size: 15px; }
 body {
   font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 400;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   background: var(--bg);
   line-height: 1.75;
   -webkit-font-smoothing: antialiased;
