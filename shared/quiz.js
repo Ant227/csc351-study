@@ -197,6 +197,12 @@ class Quiz {
     if (loading) loading.style.display = 'flex';
     box.style.display = 'none';
 
+    const key = window.ANTHROPIC_KEY;
+    if (!key || key === 'YOUR_API_KEY_HERE') {
+      this._showFeedback(box, loading, 'Add your Anthropic API key to the page to enable AI feedback.');
+      return;
+    }
+
     const wrongText = wrong.length === 0
       ? 'None — perfect score!'
       : wrong.map(w => {
@@ -206,22 +212,23 @@ class Quiz {
 
     const prompt = this.feedbackPromptFn(score, wrongText);
 
-    fetch('/api/feedback', {
+    fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        prompt: prompt,
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 800,
+        messages: [{ role: 'user', content: prompt }],
       }),
     })
       .then(r => r.json())
       .then(data => {
-        if (data.error) {
-          this._showFeedback(box, loading, 'Unable to generate feedback. Please try again.');
-          return;
-        }
-        const text = data?.feedback ?? 'Unable to parse feedback response.';
+        const text = data?.content?.[0]?.text ?? 'Unable to parse feedback response.';
         this._showFeedback(box, loading, text);
       })
       .catch(() => {
