@@ -226,12 +226,21 @@ class Quiz {
         messages: [{ role: 'user', content: prompt }],
       }),
     })
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) {
+          throw new Error(`API error: ${r.status}`);
+        }
+        return r.json();
+      })
       .then(data => {
+        if (data.error) {
+          throw new Error(data.error.message || 'API error');
+        }
         const text = data?.content?.[0]?.text ?? 'Unable to parse feedback response.';
         this._showFeedback(box, loading, text);
       })
-      .catch(() => {
+      .catch(error => {
+        console.error('Feedback error:', error);
         this._showFeedback(box, loading, 'Unable to generate feedback. Please try again.');
       });
   }
