@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Injection — Lecture 12 · CSC351</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f5f1;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --text: #1a1916;
+    --text2: #5a5752;
+    --text3: #9a968f;
+    --border: #e2ddd6;
+    --blue: #2563eb;
+    --blue-bg: #eff6ff;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    --amber: #b45309;
+    --amber-bg: #fffbeb;
+    --purple: #7c3aed;
+    --purple-bg: #f5f3ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(247,245,241,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; gap: 0; height: 52px;
+  }
+  .nav-brand { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--text); margin-right: 2rem; letter-spacing: -0.3px; }
+  .nav-brand span { color: var(--text3); }
+  .nav-tabs { display: flex; gap: 4px; }
+  .tab-btn {
+    padding: 5px 14px; border-radius: 20px; border: 1px solid transparent;
+    font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer;
+    background: transparent; color: var(--text2); transition: all 0.15s; font-weight: 400;
+  }
+  .tab-btn:hover { background: var(--surface2); color: var(--text); }
+  .tab-btn.active { background: var(--text); color: #fff; }
+
+  .page { display: none; max-width: 760px; margin: 0 auto; padding: 3rem 2rem 6rem; }
+  .page.active { display: block; }
+
+  .chapter-title { font-family: 'DM Serif Display', serif; font-size: 36px; letter-spacing: -1px; line-height: 1.2; margin-bottom: 0.5rem; }
+  .chapter-sub { font-size: 14px; color: var(--text3); margin-bottom: 3rem; font-weight: 300; }
+
+  .section-block { margin-bottom: 3rem; }
+  .section-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 12px; margin-bottom: 0.75rem;
+  }
+  .tag-concept { background: var(--purple-bg); color: var(--purple); }
+  .tag-attack { background: var(--red-bg); color: var(--red); }
+  .tag-defense { background: var(--green-bg); color: var(--green); }
+  .tag-warn { background: var(--amber-bg); color: var(--amber); }
+  .tag-blue { background: var(--blue-bg); color: var(--blue); }
+
+  .section-block h2 { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 400; letter-spacing: -0.4px; margin-bottom: 1rem; line-height: 1.3; }
+  .section-block p { color: var(--text2); margin-bottom: 1rem; font-weight: 300; }
+  .section-block p strong { color: var(--text); font-weight: 500; }
+  .section-block p:last-child { margin-bottom: 0; }
+
+  .callout { border-radius: 10px; padding: 1rem 1.25rem; margin: 1.25rem 0; font-size: 14px; font-weight: 300; }
+  .callout-blue { background: var(--blue-bg); border-left: 3px solid var(--blue); color: #1e3a8a; }
+  .callout-red { background: var(--red-bg); border-left: 3px solid var(--red); color: #7f1d1d; }
+  .callout-green { background: var(--green-bg); border-left: 3px solid var(--green); color: #14532d; }
+  .callout-amber { background: var(--amber-bg); border-left: 3px solid var(--amber); color: #78350f; }
+  .callout strong { font-weight: 500; }
+
+  code {
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 1px 6px; color: var(--text);
+  }
+  .code-block {
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem 1.25rem; margin: 1rem 0;
+    color: var(--text2); line-height: 1.7; overflow-x: auto;
+  }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+  .comments-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 1rem 0; }
+  .comment-pill {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.75rem 1rem; text-align: center;
+  }
+  .comment-pill code { font-size: 14px; }
+  .comment-pill p { font-size: 12px; color: var(--text3); margin: 4px 0 0; font-weight: 300; }
+
+  .damage-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 1rem 0; }
+  .damage-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem;
+  }
+  .damage-card .dlabel { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .damage-card p { font-size: 13px; color: var(--text2); font-weight: 300; margin: 0; }
+  .dlabel-read { color: var(--amber); }
+  .dlabel-modify { color: var(--blue); }
+  .dlabel-destroy { color: var(--red); }
+
+  .steps { margin: 1rem 0; }
+  .step { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .step:last-child { border-bottom: none; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--text); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; margin-top: 2px; }
+  .step-body { font-size: 14px; color: var(--text2); font-weight: 300; line-height: 1.55; }
+  .step-body strong { color: var(--text); font-weight: 500; }
+
+  .revision-block { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.75rem; }
+  .revision-block h2 { font-family: 'DM Serif Display', serif; font-size: 18px; font-weight: 400; margin-bottom: 1rem; }
+  .revision-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text2); font-weight: 300; line-height: 1.5; }
+  .revision-item:last-child { border-bottom: none; }
+  .revision-item::before { content: '→'; color: var(--text3); flex-shrink: 0; margin-top: 1px; }
+
+  .start-quiz-btn {
+    display: block; margin: 2.5rem auto 0; padding: 12px 32px;
+    background: var(--text); color: #fff; border: none; border-radius: 24px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: opacity 0.15s, transform 0.1s; letter-spacing: 0.01em;
+  }
+  .start-quiz-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+  /* QUIZ */
+  .quiz-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+  .quiz-header h1 { font-family: 'DM Serif Display', serif; font-size: 24px; font-weight: 400; letter-spacing: -0.5px; }
+  .answered-badge { font-size: 13px; color: var(--text3); background: var(--surface2); padding: 4px 12px; border-radius: 12px; }
+  .progress-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 2rem; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--text); border-radius: 2px; transition: width 0.3s; }
+
+  .q-block { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem; transition: border-color 0.2s; }
+  .q-block.answered { border-color: var(--text3); }
+  .q-num-label { font-size: 11px; color: var(--text3); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .q-text { font-size: 15px; font-weight: 400; line-height: 1.55; margin-bottom: 0.25rem; }
+  .q-src { font-size: 11px; color: var(--text3); font-style: italic; margin-bottom: 1rem; font-weight: 300; }
+  .opts { display: flex; flex-direction: column; gap: 6px; }
+  .opt {
+    display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px;
+    border: 1px solid var(--border); border-radius: 8px; font-size: 13px;
+    cursor: pointer; background: transparent; color: var(--text); text-align: left;
+    transition: all 0.15s; font-family: 'DM Sans', sans-serif; font-weight: 300; line-height: 1.45;
+  }
+  .opt:hover:not(:disabled) { background: var(--surface2); border-color: var(--text3); }
+  .opt .opt-label { font-weight: 500; color: var(--text3); flex-shrink: 0; font-size: 12px; margin-top: 1px; }
+  .opt.selected { background: #eff6ff; border-color: var(--blue); color: #1e3a8a; }
+  .opt.selected .opt-label { color: var(--blue); }
+  .opt.correct { background: var(--green-bg); border-color: var(--green); color: #14532d; }
+  .opt.correct .opt-label { color: var(--green); }
+  .opt.wrong { background: var(--red-bg); border-color: var(--red); color: #7f1d1d; }
+  .opt.wrong .opt-label { color: var(--red); }
+  .opt:disabled { cursor: default; }
+
+  .q-explanation { background: var(--surface2); border-radius: 8px; padding: 0.75rem 1rem; margin-top: 0.75rem; font-size: 13px; color: var(--text2); font-weight: 300; line-height: 1.6; display: none; }
+  .q-explanation.visible { display: block; }
+  .q-explanation-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); margin-bottom: 4px; }
+
+  .submit-wrap { margin-top: 2rem; text-align: center; }
+  .submit-btn {
+    padding: 13px 40px; background: var(--text); color: #fff; border: none; border-radius: 24px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: opacity 0.15s, transform 0.1s; letter-spacing: 0.01em;
+  }
+  .submit-btn:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
+  .submit-btn:disabled { opacity: 0.35; cursor: default; transform: none; }
+
+  /* RESULTS */
+  .score-display { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; text-align: center; margin-bottom: 1.5rem; }
+  .score-big { font-family: 'DM Serif Display', serif; font-size: 64px; letter-spacing: -2px; line-height: 1; margin-bottom: 0.25rem; }
+  .score-big span { font-size: 28px; color: var(--text3); vertical-align: middle; }
+  .score-pct { font-size: 15px; color: var(--text3); font-weight: 300; }
+  .score-grade { font-size: 14px; color: var(--text2); margin-top: 4px; font-weight: 400; }
+  .results-actions { display: flex; gap: 10px; justify-content: center; margin-bottom: 2rem; }
+  .btn-retry { padding: 9px 22px; border: 1px solid var(--border); border-radius: 20px; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; color: var(--text); transition: all 0.15s; font-weight: 400; }
+  .btn-retry:hover { background: var(--surface2); }
+  .feedback-section h2 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400; margin-bottom: 1rem; letter-spacing: -0.3px; }
+  .feedback-loading { display: flex; align-items: center; gap: 12px; color: var(--text3); font-size: 14px; padding: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; font-weight: 300; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--text); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .feedback-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem 1.75rem; font-size: 14px; line-height: 1.75; color: var(--text2); font-weight: 300; white-space: pre-wrap; }
+
+  @media (max-width: 600px) {
+    .comments-grid, .damage-grid { grid-template-columns: 1fr; }
+    .chapter-title { font-size: 28px; }
+    .page { padding: 2rem 1.25rem 5rem; }
+    nav { padding: 0 1rem; }
+    .nav-brand { margin-right: 1rem; font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">SQL Injection <span>· CSC351</span></div>
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="showTab('learn')">Notes</button>
+    <button class="tab-btn" onclick="showTab('quiz')">Quiz</button>
+    <button class="tab-btn" id="results-tab-btn" style="display:none" onclick="showTab('results')">Results</button>
+  </div>
+</nav>
+
+<!-- ============ LEARN ============ -->
+<div id="learn" class="page active">
+
+  <div class="chapter-title">SQL Injection</div>
+  <div class="chapter-sub">Lecture 12 — CSC351 Application Security</div>
+
+  <div class="section-block">
+    <div class="section-tag tag-concept">The Story</div>
+    <h2>The Story Starts Here</h2>
+    <p>Okay so imagine your school has a secret candy storeroom.</p>
+    <p>Only teachers can go in. There's a guard at the door. You walk up and the guard asks: "What's your name and your teacher code?"</p>
+    <p>You say "Mr. Smith, code 1234" — the guard checks his list and lets you in.</p>
+    <p>Simple enough, right?</p>
+  </div>
+
+  <div class="section-block">
+    <div class="section-tag tag-attack">The Attack</div>
+    <h2>What If You Were Really Clever?</h2>
+    <p>What if instead of your name, you said:</p>
+    <div class="code-block">"Mr. Smith OR everyone is a teacher"</div>
+    <p>The guard isn't very smart. He reads the whole thing out loud from his list: "Is this person Mr. Smith — OR — is everyone a teacher?"</p>
+    <p>Well... everyone IS a teacher in that second part. That's always true.</p>
+    <p>So the guard goes "yep, that checks out" and opens the door.</p>
+    <p>You just got into the candy storeroom without knowing the real teacher code.</p>
+    <p>That's SQL Injection. You didn't break the lock. You didn't climb through a window. You just said something sneaky to the guard and he let you in because he was too dumb to know the difference.</p>
+  </div>
+
+  <div class="section-block">
+    <div class="section-tag tag-concept">The Mechanic</div>
+    <h2>So What's the "Guard" in Real Life?</h2>
+    <p>In a real website, the guard is your database.</p>
+    <p>When you type your username and password into a login page, the website takes what you typed and builds a question to ask the database. Like this:</p>
+    <div class="code-block">"Hey database, do you have a user named 'alice' with password 'abc123'?"</div>
+    <p>The database checks its list. If it finds a match, it says yes and you're in.</p>
+    <p>The problem is how the website builds that question.</p>
+  </div>
+
+  <div class="section-block">
+    <div class="section-tag tag-attack">Root Cause</div>
+    <h2>The Dangerous Way to Build the Question</h2>
+    <p>Some websites do it like this — they just stick your input directly into the question like gluing pieces of paper together:</p>
+    <div class="code-block">"Find me a user where name = " + whatever you typed + " and password = " + whatever you typed</div>
+    <p>So if you type a normal name like alice, the question is totally fine.</p>
+    <p>But what if you type something sneaky instead?</p>
+  </div>
+
+  <div class="section-block">
+    <div class="section-tag tag-attack">The Injection</div>
+    <h2>The Sneaky Input</h2>
+    <p>You type this as your username:</p>
+    <div class="code-block">' OR 1=1 --</div>
+    <p>The website glues it in like always. Now the question becomes:</p>
+    <div class="code-block">"Find me a user where name = '' OR 1=1 --  and password = ..."</div>
+    <p>Three things just happened.</p>
+    <p>The <code>OR 1=1</code> part means "OR this is always true." One always equals one. So the whole condition becomes true for every single person in the database.</p>
+    <p>The <code>--</code> part is a comment. It tells the database "ignore everything after this." So the password check? Gone. Erased.</p>
+    <p>The database reads it and goes "yep, that's true for everyone" and hands over everything.</p>
+    <p>You just walked into the candy storeroom.</p>
+  </div>
+
+  <div class="section-block">
+    <div class="section-tag tag-attack">Escalation</div>
+    <h2>It Gets Worse</h2>
+    <p>The sneaky input doesn't just let you peek in. You can add a second command after a semicolon.</p>
+    <p>Imagine typing:</p>
+    <div class="code-block">alice; DROP TABLE users;</div>
+    <p>Now the database gets two instructions:</p>
+    <p>First: find the user alice.</p>
+    <p>Second: DELETE THE ENTIRE USER TABLE.</p>
+    <p>Every account. Every password. Every order. Every profile. Gone forever.</p>
+    <p>The Hoffman textbook calls this the nuclear option. One input field. Entire database wiped.</p>
+  </div>
+
+  <div class="section-block">
+    <div class="section-tag tag-concept">Why It Works</div>
+    <h2>Why Does the Database Fall for It?</h2>
+    <p>Because nobody told it to be suspicious.</p>
+    <p>When the website sends the database a question, it sends it as one big string of text. The database just reads it and does what it says.</p>
+    <p>It can't tell the difference between:</p>
+    <p>The part the developer wrote — the safe instructions.</p>
+    <p>The part the attacker added — the sneaky commands.</p>
+    <p>It all looks the same to the database. One big instruction. Execute it all.</p>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-block">
+    <div class="section-tag tag-attack">Comment Trick</div>
+    <h2>The Comment Trick — The Attacker's Eraser</h2>
+    <p>Ajan taught three ways to write comments in MySQL. Memorize these — they come up in exams.</p>
+    <div class="comments-grid">
+      <div class="comment-pill"><code>#</code><p>ignore everything after this</p></div>
+      <div class="comment-pill"><code>--</code><p>ignore everything after this</p></div>
+      <div class="comment-pill"><code>/* */</code><p>ignore everything between these</p></div>
+    </div>
+    <p>Why does an attacker care about comments?</p>
+    <p>Because sometimes the developer writes extra safety checks at the end of the query. Password verification, for example. The attacker uses a comment to erase those checks. Like using whiteout on the part of the sentence they don't want read.</p>
+  </div>
+
+  <div class="section-block">
+    <div class="section-tag tag-attack">Tautology</div>
+    <h2>The WHERE 1=1 Trick — The Magic Pass</h2>
+    <p>Ajan spent a lot of time on this in the demo.</p>
+    <p>WHERE is the part of a database question that filters results. Like "only show me students WHERE their grade is above 80."</p>
+    <p>If the condition is always true — like WHERE 1=1 — every single row passes the filter. One always equals one. Every student gets shown. The whole table dumps out.</p>
+    <p>Ajan literally showed this live in the terminal. He typed <code>SELECT * FROM credential WHERE 1=1</code> and every employee record appeared on screen.</p>
+    <div class="callout callout-amber">
+      <strong>This trick has a fancy name: a tautology attack.</strong> A tautology is just a statement that's always true no matter what. Smart-sounding word, simple idea.
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-tag tag-attack">Damage Levels</div>
+    <h2>Three Damage Levels</h2>
+    <div class="damage-grid">
+      <div class="damage-card">
+        <div class="dlabel dlabel-read">Read</div>
+        <p>SELECT — dump the entire table, read all records, export everything</p>
+      </div>
+      <div class="damage-card">
+        <div class="dlabel dlabel-modify">Modify</div>
+        <p>UPDATE — silently change data, alter salaries, change passwords</p>
+      </div>
+      <div class="damage-card">
+        <div class="dlabel dlabel-destroy">Destroy</div>
+        <p>DROP TABLE — delete everything, nuclear option, irreversible</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-block">
+    <div class="section-tag tag-defense">The Fix</div>
+    <h2>The Fix — Two Steps Instead of One</h2>
+    <p>Okay so here's how smart developers stop this.</p>
+    <p>Instead of building one big string and sending it to the database, they do it in two trips.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>Send the question structure,</strong> with empty blanks where the data will go.<br><code>"Find me a user where name = ? and password = ?"</code><br>The database reads this, understands the structure, and locks it in. The intention is set in stone.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Send the actual values</strong> to fill in the blanks.<br><code>username = alice, password = abc123</code><br>Now here's the magic part.</div>
+      </div>
+    </div>
+    <p>Even if someone types <code>' OR 1=1 --</code> as their username, the database treats it as data. It looks for a user whose name is literally the string <code>' OR 1=1 --</code>.</p>
+    <p>Nobody has that name. Login fails. Attack blocked.</p>
+    <p>The attacker's sneaky code never gets executed. It's treated as a shopping list item, not as an instruction.</p>
+    <div class="callout callout-green">
+      <strong>This is called a parameterized query.</strong> The Alice and Bob textbook is very clear: "Always use parameterized queries." It's the only fix that actually works at the root.
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-tag tag-defense">Backup Safety</div>
+    <h2>The Last Line of Defense — Least Privilege</h2>
+    <p>Even with parameterized queries, smart developers add one more thing.</p>
+    <p>The database account that your website uses to talk to the database should only have the minimum permissions it needs.</p>
+    <p>If your page only needs to read data, use a read-only account. That account literally cannot run DELETE or DROP or UPDATE. It doesn't have permission.</p>
+    <p>So even if an attacker somehow breaks through, they can look at data but they can't destroy it. The damage is limited.</p>
+    <div class="callout callout-blue">
+      <strong>Ajan calls this Least Privilege</strong> — you know this from Block 1. Give everyone — including software — only the access they actually need and nothing more.
+    </div>
+  </div>
+
+  <div class="section-block">
+    <div class="section-tag tag-warn">Exam Tips</div>
+    <h2>Exam / Scenario Tip</h2>
+    <p>Ajan will show you a piece of code where username is glued directly into a SQL string with a <code>+</code> sign. He'll ask you to trace the attack.</p>
+    <p>The trap is saying "the input wasn't validated." That gets partial marks. What gets full marks is explaining the two-layer problem: the database receives one combined string, it can't separate the developer's code from the attacker's injection, so it executes both.</p>
+    <p>The defense answer is not "validate the input." It's parameterized queries. Validation alone can be bypassed. Parameterized queries fix the root cause by making data structurally impossible to interpret as code.</p>
+    <p>If he asks about WHERE 1=1 specifically — call it a tautology attack and explain that a tautology is a condition that's always true, so every row in the table passes the filter.</p>
+  </div>
+
+  <hr class="divider">
+
+  <div class="revision-block">
+    <h2>Quick Revision</h2>
+    <div class="revision-item">SQL Injection = tricking the database by typing sneaky code into an input field that gets glued directly into a database query</div>
+    <div class="revision-item">String concatenation is the root cause — the developer pastes user input directly into the SQL command, so the database can't tell instructions from injected code</div>
+    <div class="revision-item">WHERE 1=1 = tautology attack — always true, dumps every row in the table</div>
+    <div class="revision-item"># and -- and /* */ = SQL comment characters — attackers use these to erase the legitimate parts of the query after their injection point</div>
+    <div class="revision-item">Three damage levels: read everything (SELECT), silently modify data (UPDATE), destroy everything (DROP TABLE)</div>
+    <div class="revision-item">Parameterized queries = the real fix — send query structure first, data second, so data can never be interpreted as code</div>
+    <div class="revision-item">Least privilege = the backup safety net — if the database account is read-only, a successful attack can read data but cannot destroy it</div>
+    <div class="revision-item">SQL injection executes server-side in the database — XSS executes client-side in the browser — don't mix these up</div>
+  </div>
+
+  <button class="start-quiz-btn" onclick="showTab('quiz')">Take the quiz →</button>
+</div>
+
+<!-- ============ QUIZ ============ -->
+<div id="quiz" class="page">
+  <div class="quiz-header">
+    <h1>SQL Injection Quiz</h1>
+    <div class="answered-badge" id="answered-count">0 / 20 answered</div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div id="quiz-container"></div>
+  <div class="submit-wrap">
+    <button class="submit-btn" id="submit-btn" onclick="submitQuiz()" disabled>Submit answers</button>
+  </div>
+</div>
+
+<!-- ============ RESULTS ============ -->
+<div id="results" class="page">
+  <div id="results-container"></div>
+</div>
+
+<script>
+const Q = [
+  {q:"SQL Injection is an attack in which _________ code is inserted into strings that are later passed to a database.",src:"Sanfoundry — SQL Server MCQs: SQL Injection",opts:["Malicious","Redundant","Clean","Non-malicious"],ans:0,exp:"SQL injection is a code injection technique used to attack data-driven applications. The attacker inserts malicious code into input strings that are then passed directly to the database — and the database blindly executes them."},
+  {q:"At which stage does SQL Injection most commonly occur?",src:"includehelp.com — SQL Injection MCQs",opts:["When the user logs out","When the user inputs their password","When the user inputs their username","When the session expires"],ans:2,exp:"SQL Injection typically occurs at input fields — most classically the username field — where a SQL statement is provided instead of a real name. The application pastes that input directly into the query, and the database executes it."},
+  {q:"Which of the following correctly describes what SQL Injection can do to a database?",src:"includehelp.com — SQL Injection MCQs",opts:["It can only read data, never modify it","It can insert, update, and delete data","It can only delete tables","It has no effect on stored data"],ans:1,exp:"SQL Injection attacks can do all of the above — insert new records, update existing ones, delete data, and even drop entire tables. An attacker who controls the SQL query controls the database."},
+  {q:"In the context of SQL Injection, what does the following WHERE clause do? WHERE 1=1",src:"Web Application Security — Andrew Hoffman, Ch. 13",opts:["Returns no rows because 1 does not equal 1","Returns only one row","Returns all rows because the condition is always true","Causes a database error"],ans:2,exp:"1=1 is always true — that's what makes it a tautology. When every row is evaluated against this condition, every row passes. The entire table gets returned. Ajan demonstrated this live in the SEED lab terminal."},
+  {q:"A developer writes this query: SELECT * FROM users WHERE username = '[userInput]'. Why is this vulnerable?",src:"Web Application Security — Andrew Hoffman, Ch. 13 & OWASP Cheat Sheet",opts:["Because SELECT is a dangerous command","Because userInput is concatenated directly into the SQL string with no separation between code and data","Because the WHERE clause is optional","Because the database doesn't support string input"],ans:1,exp:"String concatenation is the root cause of SQL injection. When user input is glued directly into the SQL string, the database receives one big blob of text and cannot tell where the developer's code ends and the attacker's injected code begins."},
+  {q:"An attacker types the following as their username: ' OR '1'='1. What does this do to a login query?",src:"OWASP SQL Injection Prevention Cheat Sheet",opts:["It crashes the database server","It logs the attacker out immediately","It turns the WHERE condition into one that is always true, bypassing password verification","It encrypts the password field"],ans:2,exp:"The injected OR '1'='1' makes the entire WHERE condition always true. The database finds a match for every user, effectively bypassing the login check entirely — no valid password needed."},
+  {q:"What do the characters --, #, and /* */ do in a SQL Injection attack?",src:"Ajan's Lecture 12 — SEED Lab SQL Injection demo",opts:["They encrypt the injected payload","They mark the beginning of a new SQL table","They act as comment characters, causing the database to ignore everything after them","They are used to select specific columns"],ans:2,exp:"These are SQL comment characters. Attackers use them to erase the rest of the legitimate query after their injection point — for example, to cut off a password verification check that would otherwise block the attack."},
+  {q:"Which SQL statement, if injected, would return all rows from a table AND then delete a separate table?",src:"includehelp.com — SQL Injection MCQs",opts:["SELECT * WHERE Table; DELETE TABLE users","SELECT * FROM users; DROP TABLE users","SELECT ALL FROM users DELETE users","GET * FROM users; REMOVE TABLE users"],ans:1,exp:"SELECT * FROM users returns all rows. The semicolon ends the first statement and starts a new one. DROP TABLE users then permanently deletes the entire table. This is the 'nuclear option' Ajan described in the lecture."},
+  {q:"How do parameterized queries prevent SQL Injection?",src:"examradar.com — SQL Injection MCQs on Data Stores",opts:["By encrypting all SQL queries before sending them to the database","By using placeholders for input values so user data is always treated as data, never as executable code","By blocking all user input from reaching the database","By limiting queries to read-only operations"],ans:1,exp:"Parameterized queries compile the query structure first with placeholder variables. The user's data is sent separately and slotted into those placeholders. Even if the data contains ' OR 1=1, the database reads it as a literal string — never as executable SQL logic."},
+  {q:"According to the Alice and Bob textbook, which is the ONLY approach that reliably mitigates SQL Injection vulnerabilities?",src:"Alice and Bob Learn Application Security, Ch. 2 — Parameterized Queries",opts:["Input validation alone","Output encoding","Parameterized queries","Using a Web Application Firewall"],ans:2,exp:"The Alice and Bob textbook states explicitly: 'Only using parameterized queries instead reliably mitigates this vulnerability. Always use parameterized queries.' Input validation alone can be bypassed with creative encoding. Parameterized queries fix the root cause structurally."},
+  {q:"What does 'inline SQL' mean, and why is it dangerous?",src:"Alice and Bob Learn Application Security, Ch. 2",opts:["SQL that runs inside the browser — dangerous because the browser is untrusted","SQL built by concatenating user input directly into a query string — dangerous because the database cannot separate code from data","SQL that runs without authentication — dangerous because anyone can call it","SQL stored in cookies — dangerous because cookies can be stolen"],ans:1,exp:"Inline SQL means building a query by gluing user input into a string like 'SELECT * FROM users WHERE name = ' + input. The database gets one combined string and executes it all. This is exactly what parameterized queries are designed to replace."},
+  {q:"How does applying 'Least Privilege' to a database account limit the damage of a successful SQL Injection attack?",src:"examradar.com — SQL Injection MCQs & Alice and Bob Learn Application Security",opts:["It prevents the attack from happening in the first place","It limits what the attacker can do — a read-only account cannot run DELETE or DROP commands even if injection succeeds","It encrypts the database so the attacker cannot read it","It automatically logs out the attacker"],ans:1,exp:"Least Privilege means giving the web app's database account only what it needs. If the account is read-only, an attacker who succeeds with SQL injection can view data but cannot delete tables or modify records. The blast radius shrinks dramatically."},
+  {q:"In SQL Injection, what is the purpose of a tautology attack?",src:"moxso.com — SQL Tautology / OWASP Top 10",opts:["To slow down the database server with complex queries","To inject a condition that is always true, causing all rows to be returned regardless of other conditions","To delete all data in the database in one step","To encrypt the injected payload so it bypasses filters"],ans:1,exp:"A tautology is a statement that is always true (e.g. 1=1, or 'a'='a'). When injected into a WHERE clause, it overrides all other conditions and forces the database to return every row — bypassing authentication or exposing the entire dataset."},
+  {q:"What type of vulnerability is most commonly exploited in SQL Injection attacks?",src:"examradar.com — SQL Injection MCQs on Data Stores",opts:["Cross-Site Scripting vulnerability","File Inclusion vulnerability","Input Validation vulnerability","Session Management vulnerability"],ans:2,exp:"SQL Injection exploits Input Validation vulnerabilities — specifically, the failure to properly validate or sanitize user input before it's used in a database query. The application trusts whatever the user types and passes it straight to the database."},
+  {q:"What is the difference between how SQL Injection executes versus how XSS executes?",src:"Alice and Bob Learn Application Security + Ajan's Lecture 12",opts:["Both execute inside the victim's browser","SQL Injection executes in the database on the server side; XSS executes in the victim's browser on the client side","SQL Injection executes in the browser; XSS executes in the database","Both execute on the web application server"],ans:1,exp:"This is a key distinction Ajan emphasizes. XSS is client-side — the malicious code runs in the victim's browser. SQL Injection is server-side — the malicious code runs in the database interpreter. Confusing these two is a common exam mistake."},
+  {q:"A web app runs this query: SELECT * FROM users WHERE USER = '[user_id]'. An attacker sets user_id = '1=1'. What does the database now return?",src:"Web Application Security — Andrew Hoffman, Ch. 13",opts:["An error, because 1=1 is not a valid user ID","Nothing, because the user doesn't exist","All user objects in the database, because WHERE USER = 1=1 evaluates as true for every row","Only user ID number 1"],ans:2,exp:"Because 1=1 is always true, the WHERE condition passes for every single row in the database. All user records are returned. The Hoffman textbook demonstrates this exact example — it's the most classic tautology injection pattern."},
+  {q:"How do Web Application Firewalls (WAFs) contribute to SQL Injection prevention?",src:"examradar.com — SQL Injection MCQs on Data Stores",opts:["By encrypting all database connections","By blocking known SQL Injection patterns and malicious requests before they reach the application","By preventing web servers from processing SQL queries at all","By replacing parameterized queries with safer alternatives"],ans:1,exp:"WAFs sit in front of the application and inspect incoming traffic. They can recognize known SQLi patterns (like ' OR 1=1 or UNION SELECT) and block those requests before they ever reach the application or database. They're a useful additional layer but not a substitute for parameterized queries."},
+  {q:"What is Blind SQL Injection?",src:"examradar.com — SQL Injection MCQs on Data Stores",opts:["An attack where the attacker cannot see the database at all and gives up","An attack where the attacker injects code and infers information from the application's behavior (like response time or true/false responses) without seeing direct database output","An attack that targets only encrypted databases","An attack where the injection is hidden inside images"],ans:1,exp:"In Blind SQL Injection the database doesn't display results directly on screen. Instead, the attacker infers information indirectly — e.g. the page loads slowly if a condition is true (time-based), or shows different content for true vs false conditions (boolean-based)."},
+  {q:"In an attack, the following is injected: alice'; UPDATE users SET salary=999999 WHERE username='alice'; --. What is the attacker doing?",src:"Web Application Security — Andrew Hoffman, Ch. 13 (adapted scenario)",opts:["Reading all users from the database","Deleting the entire users table","Modifying their own salary record in the database silently while the original query still runs normally","Logging out the user alice"],ans:2,exp:"The semicolon ends the first query and starts a second one — an UPDATE that modifies the attacker's salary. The -- comment erases the rest of the original query. The original login query still runs normally so nothing looks suspicious. Silent data manipulation — exactly what Hoffman describes as the 'stealthy' attack."},
+  {q:"According to the OWASP Top 10, where does Injection rank as a web application vulnerability?",src:"Alice and Bob Learn Application Security, Ch. 5 — OWASP Top 10",opts:["#5 — a moderate risk","#3 — behind XSS and broken authentication","#1 — the highest-risk vulnerability for web applications","#10 — the least dangerous of the top threats"],ans:2,exp:"Injection (which includes SQL Injection) is ranked #1 on the OWASP Top 10 — the highest risk vulnerability for web applications. The Alice and Bob textbook states this explicitly: 'It is the #1 highest risk attack for any web application as per the OWASP Top Ten.'"}
+];
+
+const LABELS = ['A','B','C','D'];
+let answers = new Array(20).fill(null);
+let submitted = false;
+
+function buildQuiz() {
+  const c = document.getElementById('quiz-container');
+  c.innerHTML = '';
+  Q.forEach((q, i) => {
+    const d = document.createElement('div');
+    d.className = 'q-block';
+    d.id = 'qblock-' + i;
+    d.innerHTML = `
+      <div class="q-num-label">Question ${i+1} of 20</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-src">${q.src}</div>
+      <div class="opts">
+        ${q.opts.map((o,j) => `<button class="opt" onclick="pick(${i},${j})" id="opt-${i}-${j}"><span class="opt-label">${LABELS[j]}</span>${o}</button>`).join('')}
+      </div>
+      <div class="q-explanation" id="exp-${i}">
+        <div class="q-explanation-label">Explanation</div>
+        ${q.exp}
+      </div>`;
+    c.appendChild(d);
+  });
+}
+
+function pick(qi, oi) {
+  if (submitted) return;
+  if (answers[qi] !== null) document.getElementById(`opt-${qi}-${answers[qi]}`).classList.remove('selected');
+  answers[qi] = oi;
+  document.getElementById(`opt-${qi}-${oi}`).classList.add('selected');
+  document.getElementById('qblock-' + qi).classList.add('answered');
+  const done = answers.filter(a => a !== null).length;
+  document.getElementById('answered-count').textContent = `${done} / 20 answered`;
+  document.getElementById('progress-fill').style.width = (done / 20 * 100) + '%';
+  document.getElementById('submit-btn').disabled = done < 20;
+}
+
+async function submitQuiz() {
+  submitted = true;
+  document.getElementById('submit-btn').disabled = true;
+  let score = 0;
+  const wrong = [];
+  Q.forEach((q, i) => {
+    const ua = answers[i];
+    for (let j = 0; j < 4; j++) {
+      const btn = document.getElementById(`opt-${i}-${j}`);
+      btn.disabled = true;
+      if (j === q.ans) btn.classList.add('correct');
+      else if (j === ua && ua !== q.ans) btn.classList.add('wrong');
+      btn.classList.remove('selected');
+    }
+    document.getElementById('exp-' + i).classList.add('visible');
+    if (ua === q.ans) score++;
+    else wrong.push({ num: i+1, q: q.q, chose: LABELS[ua] + '. ' + q.opts[ua], correct: LABELS[q.ans] + '. ' + q.opts[q.ans] });
+  });
+  document.getElementById('results-tab-btn').style.display = '';
+  showTab('results');
+  const pct = Math.round(score / 20 * 100);
+  const grade = pct >= 90 ? 'Excellent — exam-ready' : pct >= 70 ? 'Good — minor gaps to fill' : pct >= 50 ? 'Needs work — review weak areas' : 'Review required — go back to notes';
+  const rc = document.getElementById('results-container');
+  rc.innerHTML = `
+    <div class="score-display">
+      <div class="score-big">${score}<span>/20</span></div>
+      <div class="score-pct">${pct}%</div>
+      <div class="score-grade">${grade}</div>
+    </div>
+    <div class="results-actions">
+      <button class="btn-retry" onclick="retry()">↺ Retry quiz</button>
+      <button class="btn-retry" onclick="showTab('learn')">← Back to notes</button>
+    </div>
+    <div class="feedback-section">
+      <h2>AI feedback</h2>
+      <div id="feedback-area">
+        <div class="feedback-loading"><div class="spinner"></div>Analyzing your answers…</div>
+      </div>
+    </div>`;
+  await getFeedback(score, wrong);
+}
+
+async function getFeedback(score, wrong) {
+  const wrongText = wrong.length === 0 ? 'All correct!' :
+    wrong.map(w => `Q${w.num}: "${w.q}" — chose "${w.chose}" but correct is "${w.correct}"`).join('\n');
+  const prompt = `You are a CSC351 Application Security tutor at KMUTT helping a student review SQL Injection quiz results.
+
+Score: ${score}/20
+Wrong answers:
+${wrongText}
+
+Give concise, exam-focused feedback. For each wrong answer start with "Q[number]:" and briefly explain why the correct answer is right and the chosen one is wrong. Then write a short "Review focus:" section naming the 2-3 specific topics to revisit. End with one short encouraging sentence. Plain text only, no markdown or bullet symbols.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content.map(b => b.text || '').join('');
+    document.getElementById('feedback-area').innerHTML = `<div class="feedback-box">${text}</div>`;
+  } catch(e) {
+    const fallback = wrong.length === 0 ? 'Perfect score! Everything is solid — move on to the next lecture.' :
+      'Focus on: ' + [...new Set(wrong.map(w => w.q.split(' ').slice(0,5).join(' ') + '…'))].join('; ');
+    document.getElementById('feedback-area').innerHTML = `<div class="feedback-box">${fallback}</div>`;
+  }
+}
+
+function retry() {
+  submitted = false;
+  answers = new Array(20).fill(null);
+  document.getElementById('results-tab-btn').style.display = 'none';
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('answered-count').textContent = '0 / 20 answered';
+  document.getElementById('submit-btn').disabled = true;
+  buildQuiz();
+  showTab('quiz');
+}
+
+function showTab(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  const idx = name === 'learn' ? 0 : name === 'quiz' ? 1 : 2;
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+buildQuiz();
+</script>
+</body>
+</html>

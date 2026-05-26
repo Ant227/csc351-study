@@ -50,12 +50,13 @@
     </div>
 
     <!-- 3. SQL Injection -->
-    <div class="topic-card topic-card-disabled">
+    <div class="topic-card" id="card-sqli">
       <div class="topic-card-body">
         <div class="topic-card-title">SQL Injection</div>
         <div class="topic-card-desc">Tautology attacks, string concatenation bugs, and why parameterized queries are the only real fix.</div>
         <div class="topic-card-footer">
-          <span class="coming-soon-badge">Coming soon</span>
+          <span class="score-badge" id="badge-sqli" style="display:none"></span>
+          <a class="topic-card-link" href="sqli.html">Study →</a>
         </div>
       </div>
     </div>
@@ -75,7 +76,7 @@
 
   <script>
     (function () {
-      var topics = ['xss', 'clickjacking'];
+      var topics = ['xss', 'clickjacking', 'sqli'];
       topics.forEach(function(topic) {
         var score = localStorage.getItem('score_' + topic);
         if (score !== null) {
