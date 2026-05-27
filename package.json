@@ -1,5 +1,8 @@
 {
   "name": "csc351-study",
   "version": "1.0.0",
-  "description": "CSC351 Application Security Study Website"
+  "description": "CSC351 Application Security Study Website",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
 }
